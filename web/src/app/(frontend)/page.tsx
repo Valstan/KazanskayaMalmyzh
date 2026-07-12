@@ -29,7 +29,7 @@ export default function HomePage() {
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }} />
 
-      <Hero image="vk-karnaval-01" kicker="Малмыж · Кировская область" title="Ярмарка Казанская">
+      <Hero image="vk-karnaval-01" kicker="Малмыж · Кировская область" title="Ярмарка Казанская" logo>
         <span className="hero__date">Суббота, 25 июля 2026</span>
         <p className="hero__theme">
           Тема года — <strong>{FEST_THEME}</strong>
