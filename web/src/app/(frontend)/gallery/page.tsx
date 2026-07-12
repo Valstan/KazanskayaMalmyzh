@@ -3,13 +3,13 @@ import { getPayload } from 'payload'
 
 import config from '@payload-config'
 import { Hero } from '../_components/Hero'
-import { VK_CARNIVAL, VK_ALBUM, VK_GROUP, VK_GROUP_NAME } from '../../../lib/vkCredits'
+import { GALLERY_2024, GALLERY_ATTRIBUTION } from '../../../lib/galleryPhotos'
 
 export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Галерея',
-  description: 'Фотографии Ярмарки Казанской в Малмыже: карнавальное шествие 2024 года и не только.',
+  description: 'Фотографии Ярмарки Казанской в Малмыже: карнавальное шествие, сцена, награждения — праздник 2024 года.',
 }
 
 export default async function GalleryPage() {
@@ -35,25 +35,21 @@ export default async function GalleryPage() {
         <div className="flourish" aria-hidden />
 
         <section className="section section--tight">
-          <h2>Карнавал — Ярмарка Казанская 2024</h2>
+          <h2>Ярмарка Казанская — 2024</h2>
           <p>
-            Костюмированное шествие — визитная карточка праздника. Несколько кадров с карнавала
-            2024 года из паблика Центра культуры и досуга Малмыжа.
+            Костюмированное шествие, открытие на главной сцене, награждения и гости праздника —
+            несколько кадров с ярмарки 2024 года.
           </p>
           <div className="photo-grid">
-            {VK_CARNIVAL.map((p) => (
-              <a key={p.slug} className="photo-grid__item" href={p.source} target="_blank" rel="noreferrer noopener" title={`${p.caption} — источник в ВКонтакте`}>
+            {GALLERY_2024.map((p) => (
+              <figure key={p.slug} className="photo-grid__item photo-grid__item--static">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={`/decor/${p.slug}.jpg`} alt={p.caption} loading="lazy" />
-                <span className="photo-grid__cap">{p.caption}</span>
-              </a>
+                <figcaption className="photo-grid__cap">{p.caption}</figcaption>
+              </figure>
             ))}
           </div>
-          <p className="muted">
-            Фотографии: <a href={VK_GROUP} target="_blank" rel="noreferrer noopener">{VK_GROUP_NAME}</a>,
-            альбом <a href={VK_ALBUM} target="_blank" rel="noreferrer noopener">«Ярмарка Казанская 2024 Карнавал»</a>.
-            Если вы автор снимка и хотите изменить подпись или убрать фото — напишите оргкомитету.
-          </p>
+          <p className="muted">{GALLERY_ATTRIBUTION}.</p>
         </section>
 
         {albums.length > 0 ? (

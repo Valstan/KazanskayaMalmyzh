@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default function YearsPage() {
   return (
     <main>
-      <Hero image="vk-karnaval-10" kicker="Архив" title="Как это было" subtitle="Темы карнавала по годам" />
+      <Hero image="oa-01" kicker="Архив" title="Как это было" subtitle="Темы карнавала по годам" />
 
       <div className="wrap">
         <div className="flourish" aria-hidden />
