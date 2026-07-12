@@ -1,0 +1,81 @@
+/* M1-заглушка. Палитра — первый намёк на ярмарочно-купеческий дух (кумач, золото,
+   тёмное дерево); полноценная research-first тема — в M2 по visual-research. */
+:root {
+  --fair-red: #a4243b;
+  --fair-gold: #d8a548;
+  --fair-cream: #f8f1e5;
+  --fair-ink: #2b1d16;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Georgia, 'Times New Roman', serif;
+  background: var(--fair-cream);
+  color: var(--fair-ink);
+  line-height: 1.6;
+}
+
+.landing {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3rem 1.25rem 2rem;
+  text-align: center;
+}
+
+.hero .kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.8rem;
+  color: var(--fair-red);
+}
+
+.hero h1 {
+  font-size: clamp(2.4rem, 8vw, 4rem);
+  color: var(--fair-red);
+  margin: 0.5rem 0;
+}
+
+.hero .date {
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.hero .theme {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+}
+
+.theme-note {
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+
+.teaser {
+  margin-top: 3rem;
+  padding: 1.5rem;
+  border-top: 3px double var(--fair-gold);
+  border-bottom: 3px double var(--fair-gold);
+}
+
+.teaser h2 {
+  color: var(--fair-red);
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+}
+
+.teaser .soon {
+  margin-top: 1rem;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.foot {
+  margin-top: 2.5rem;
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
