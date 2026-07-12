@@ -311,6 +311,50 @@ main li { margin-bottom: 0.25rem; }
   margin-right: 0.4rem;
 }
 
+/* ---------- Полноширинная фото-лента (баннер сцены с рушниками) ---------- */
+.photoband {
+  position: relative;
+  margin-top: 2.5rem;
+  padding: clamp(2.6rem, 8vw, 4.5rem) 1.25rem;
+  background-size: cover;
+  background-position: center 30%;
+  color: #fff;
+  text-align: center;
+  isolation: isolate;
+}
+.photoband::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  /* тёплая подложка: низ темнее (скрывает людей у кромки), центр — читаемый текст */
+  background: linear-gradient(180deg, rgba(46, 90, 128, 0.55) 0%, rgba(92, 20, 31, 0.78) 100%);
+}
+.photoband__inner { max-width: 680px; margin: 0 auto; }
+.photoband .kicker { color: var(--fair-gold-bright); margin-bottom: 0.4rem; }
+.photoband h2 {
+  font-family: var(--font-heading-f);
+  color: #fff;
+  font-size: clamp(1.25rem, 4.4vw, 1.9rem);
+  margin: 0 0 0.7rem;
+}
+.photoband h2::before { content: none; }
+.photoband p { text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45); }
+.photoband__btn {
+  display: inline-block;
+  margin-top: 0.9rem;
+  padding: 0.5rem 1.4rem;
+  border: 2px solid var(--fair-gold);
+  border-radius: 999px;
+  color: #fff;
+  font-family: var(--font-heading-f);
+  font-weight: 700;
+  text-decoration: none;
+  background: rgba(92, 20, 31, 0.45);
+  transition: background 0.15s;
+}
+.photoband__btn:hover { background: rgba(92, 20, 31, 0.75); color: #fff; }
+
 /* ---------- Фото-сетка галереи ---------- */
 .photo-grid {
   display: grid;

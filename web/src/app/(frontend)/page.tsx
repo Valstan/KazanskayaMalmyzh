@@ -92,6 +92,21 @@ export default function HomePage() {
           </div>
         </section>
       </div>
+
+      {/* Полноширинная лента-фон: сцена праздника — логотип на рушниках четырёх народов */}
+      <section className="photoband" style={{ backgroundImage: 'url(/decor/etnogorod-banner.jpg)' }}>
+        <div className="photoband__inner">
+          <p className="kicker">Четыре народа — один праздник</p>
+          <h2>Русские · Татары · Марийцы · Удмурты</h2>
+          <p>
+            Символ ярмарки — на рушниках четырёх народов Малмыжской земли. В «Этногороде» их
+            подворья, костюмы и кухни встречаются на одной поляне.
+          </p>
+          <Link className="photoband__btn" href="/map">
+            Карта праздника →
+          </Link>
+        </div>
+      </section>
     </main>
   )
 }
