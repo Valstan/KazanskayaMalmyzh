@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
+import { Hero } from '../_components/Hero'
 
 export const revalidate = 60
 
@@ -34,12 +35,13 @@ export default async function ProgramPage() {
 
   return (
     <main>
+      <Hero image="fireworks" kicker="25 июля 2026" title="Программа праздника" subtitle="От утреннего шествия до ночного фейерверка" />
+
       <div className="wrap">
-        <p className="kicker">25 июля 2026</p>
-        <h1>Программа праздника</h1>
+        <div className="flourish" aria-hidden />
 
         {events.length > 0 ? (
-          <section>
+          <section className="section section--tight">
             {events.map((e) => (
               <div className="event" key={e.id}>
                 <div className="when">{fmtTime.format(new Date(e.startDate))} — {e.title}</div>
@@ -51,7 +53,7 @@ export default async function ProgramPage() {
             ))}
           </section>
         ) : (
-          <section>
+          <section className="section section--tight">
             <p className="lead">
               Оргкомитет ещё не опубликовал афишу 2026 года — как только она появится, точное
               расписание будет здесь. А устроен праздник из года в год так:

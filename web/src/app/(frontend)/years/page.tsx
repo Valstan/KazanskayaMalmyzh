@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { YEAR_THEMES } from '../../../lib/site'
+import { Hero } from '../_components/Hero'
 
 export const revalidate = 3600
 
@@ -13,44 +14,50 @@ export const metadata: Metadata = {
 export default function YearsPage() {
   return (
     <main>
+      <Hero image="folk-crowd" kicker="Архив" title="Как это было" subtitle="Темы карнавала по годам" />
+
       <div className="wrap">
-        <p className="kicker">Архив</p>
-        <h1>Как это было</h1>
-        <p className="lead">
-          У карнавального шествия каждый год — своя тема. Костюмы не повторяются, делегации
-          готовятся месяцами, а Король и Королева карнавала возглавляют колонну. Вот темы, которые
-          удалось восстановить по репортажам и архивам.
-        </p>
+        <div className="flourish" aria-hidden />
 
-        <table className="years">
-          <thead>
-            <tr>
-              <th>Год</th>
-              <th>Тема</th>
-              <th>Подробности</th>
-            </tr>
-          </thead>
-          <tbody>
-            {YEAR_THEMES.map((y) => (
-              <tr key={y.year}>
-                <td className="y">
-                  {y.year}
-                  {y.date ? <div className="muted">{y.date}</div> : null}
-                </td>
-                <td>
-                  <strong>{y.theme}</strong>
-                  {y.weak ? <div className="muted">по неподтверждённым данным</div> : null}
-                </td>
-                <td>{y.note ?? ''}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <section className="section section--tight">
+          <p className="lead">
+            У карнавального шествия каждый год — своя тема. Костюмы не повторяются, делегации
+            готовятся месяцами, а Король и Королева карнавала возглавляют колонну. Вот темы, которые
+            удалось восстановить по репортажам и архивам.
+          </p>
 
-        <div className="notice">
-          Помните темы 2017–2025 годов, сохранились афиши или фотографии? Напишите оргкомитету или
-          в паблики района — поможем собрать полную летопись ярмарки.
-        </div>
+          <div className="years-wrap">
+            <table className="years">
+              <thead>
+                <tr>
+                  <th>Год</th>
+                  <th>Тема</th>
+                  <th>Подробности</th>
+                </tr>
+              </thead>
+              <tbody>
+                {YEAR_THEMES.map((y) => (
+                  <tr key={y.year}>
+                    <td className="y">
+                      {y.year}
+                      {y.date ? <div className="muted">{y.date}</div> : null}
+                    </td>
+                    <td>
+                      <strong>{y.theme}</strong>
+                      {y.weak ? <div className="muted">по неподтверждённым данным</div> : null}
+                    </td>
+                    <td>{y.note ?? ''}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="notice">
+            Помните темы 2017–2025 годов, сохранились афиши или фотографии? Напишите оргкомитету или
+            в паблики района — поможем собрать полную летопись ярмарки.
+          </div>
+        </section>
       </div>
     </main>
   )

@@ -28,6 +28,17 @@ const nextConfig = {
       }),
     ],
   },
+  // /decor — контент-стабильные именованные ассеты (фото-шапки, декор). Длинный кэш
+  // снимает повторную загрузку под фестивальным пиком (единственный vCPU бокса).
+  // Не immutable: при замене файла под тем же именем 7-дневный max-age самозалечивается.
+  async headers() {
+    return [
+      {
+        source: '/decor/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=86400' }],
+      },
+    ]
+  },
   reactStrictMode: true,
 }
 

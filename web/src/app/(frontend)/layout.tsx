@@ -1,9 +1,16 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import React from 'react'
+import { Ruslan_Display, Playfair_Display, PT_Serif } from 'next/font/google'
 
 import { SITE_URL, SITE_NAME, FEST_DATE_HUMAN } from '../../lib/site'
 import './globals.css'
+
+// Праздничные шрифты (research-first): орнаментальный дисплей в духе старинных
+// ярмарочных вывесок + нарядный заголовочный серив + читаемый книжный серив тела.
+const display = Ruslan_Display({ subsets: ['cyrillic', 'latin'], weight: '400', variable: '--font-display', display: 'swap' })
+const heading = Playfair_Display({ subsets: ['cyrillic', 'latin'], weight: ['600', '700', '800'], variable: '--font-heading', display: 'swap' })
+const body = PT_Serif({ subsets: ['cyrillic', 'latin'], weight: ['400', '700'], variable: '--font-body', display: 'swap' })
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -34,12 +41,14 @@ const NAV = [
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru">
+    <html lang="ru" className={`${display.variable} ${heading.variable} ${body.variable}`}>
       <body>
         <header className="site-header">
-          <div className="wrap">
+          <div className="wrap site-header__inner">
             <Link href="/" className="brand">
-              Ярмарка Казанская
+              <span className="brand__mark" aria-hidden>❧</span>
+              <span className="brand__text">Ярмарка&nbsp;Казанская</span>
+              <span className="brand__mark brand__mark--flip" aria-hidden>❧</span>
             </Link>
             <nav className="site-nav">
               {NAV.map((item) => (
@@ -49,14 +58,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               ))}
             </nav>
           </div>
+          <div className="ornament" aria-hidden />
         </header>
-        <div className="ornament" />
+
         {children}
+
         <footer className="site-footer">
-          <div className="wrap">
+          <div className="ornament ornament--gold" aria-hidden />
+          <div className="wrap site-footer__inner">
+            <p className="site-footer__brand">Ярмарка&nbsp;Казанская</p>
             <p>
-              Ярмарка Казанская — {FEST_DATE_HUMAN}, г. Малмыж, Кировская область.
+              {FEST_DATE_HUMAN} · г. Малмыж, Кировская область. С девяти утра субботы — до утра
+              воскресенья.
+            </p>
+            <p>
               Оргкомитет: карнавал и ремесленники — (83347) 2‑22‑28, торговля — (83347) 2‑28‑83.
+            </p>
+            <p className="site-footer__links">
+              <Link href="/istochniki-foto">Источники фотографий</Link>
             </p>
           </div>
         </footer>

@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
+import { Hero } from '../_components/Hero'
 
 export const revalidate = 60
 
@@ -40,37 +41,37 @@ export default async function MapPage() {
 
   return (
     <main>
+      <Hero image="malmyzh-street" kicker="Где что" title="Карта праздника" subtitle="Площадки, сцены и маршрут шествия" />
+
       <div className="wrap">
-        <p className="kicker">Где что</p>
-        <h1>Карта праздника</h1>
-        {intro ? <p className="lead">{intro}</p> : null}
+        <div className="flourish" aria-hidden />
 
-        {planUrl ? (
-          <p>
-            <Image src={planUrl} alt="План территории праздника" width={1600} height={1100} style={{ width: '100%', height: 'auto', borderRadius: 6 }} />
-          </p>
-        ) : (
-          <p className="lead">
-            Схема площадок 2026 года появится здесь ближе к празднику.
-          </p>
-        )}
+        <section className="section section--tight">
+          {intro ? <p className="lead">{intro}</p> : null}
 
-        {points.length > 0 ? (
-          <section>
-            <h2>Объекты на территории</h2>
-            <ul>
-              {points.map((p, i) => (
-                <li key={i}>
-                  <strong>{p.label}</strong>
-                  {p.type && TYPE_LABEL[p.type] ? ` — ${TYPE_LABEL[p.type]}` : ''}
-                  {p.note ? ` (${p.note})` : ''}
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
+          {planUrl ? (
+            <p>
+              <Image src={planUrl} alt="План территории праздника" width={1600} height={1100} style={{ width: '100%', height: 'auto', borderRadius: 8 }} />
+            </p>
+          ) : (
+            <p className="lead">Схема площадок 2026 года появится здесь ближе к празднику.</p>
+          )}
 
-        <section>
+          {points.length > 0 ? (
+            <>
+              <h2>Объекты на территории</h2>
+              <ul>
+                {points.map((p, i) => (
+                  <li key={i}>
+                    <strong>{p.label}</strong>
+                    {p.type && TYPE_LABEL[p.type] ? ` — ${TYPE_LABEL[p.type]}` : ''}
+                    {p.note ? ` (${p.note})` : ''}
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+
           <h2>Маршрут карнавального шествия</h2>
           <p>
             Традиционный маршрут: от Центра культуры и досуга по улице Чернышевского →

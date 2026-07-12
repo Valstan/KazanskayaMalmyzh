@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { SITE_URL, FEST_DATE_ISO, FEST_THEME, FEST_THEME_NOTE } from '../../lib/site'
+import { Hero, Figure } from './_components/Hero'
 
 export const revalidate = 3600
 
@@ -27,19 +28,20 @@ export default function HomePage() {
   return (
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }} />
-      <div className="wrap">
-        <section className="hero">
-          <p className="kicker">Малмыж · Кировская область</p>
-          <h1>Ярмарка Казанская</h1>
-          <p className="date">Суббота, 25 июля 2026</p>
-          <p className="theme">
-            Тема года — <strong>{FEST_THEME}</strong>
-            <br />
-            <span className="muted">{FEST_THEME_NOTE}</span>
-          </p>
-        </section>
 
-        <section>
+      <Hero image="hero-fair" kicker="Малмыж · Кировская область" title="Ярмарка Казанская">
+        <span className="hero__date">Суббота, 25 июля 2026</span>
+        <p className="hero__theme">
+          Тема года — <strong>{FEST_THEME}</strong>
+          <br />
+          <span className="muted" style={{ color: 'rgba(255,255,255,0.8)' }}>{FEST_THEME_NOTE}</span>
+        </p>
+      </Hero>
+
+      <div className="wrap">
+        <div className="flourish" aria-hidden />
+
+        <section className="section section--tight">
           <h2>Заходи, честной народ, к нам на ярмаНку!</h2>
           <p className="lead">
             Главный праздник Малмыжского района и день города Малмыжа: с девяти утра субботы до
@@ -66,8 +68,16 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section>
+        <div className="flourish" aria-hidden />
+
+        <section className="section section--tight">
           <h2>Что вас ждёт</h2>
+          <Figure
+            image="mari-ensemble"
+            alt="Фольклорный ансамбль в национальных костюмах"
+            caption="«Этногород»: подворья и костюмы четырёх народов Малмыжа"
+            float
+          />
           <ul>
             <li>Карнавальное шествие по теме года — визитная карточка праздника.</li>
             <li>«Город мастеров» — выставка-конкурс ремёсел со всей округи и из других регионов.</li>
