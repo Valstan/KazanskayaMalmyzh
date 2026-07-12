@@ -23,8 +23,22 @@
 - Прод-БД: initial-миграция (#017) применена через SSH-туннель (`payload migrate` c dev-машины); **новые миграции — тем же способом, деплой после них через workflow_dispatch (гвард)**.
 - Первый админ создан (креды в KARMAN). Тема research-first, /history /years /program /map /gallery + JSON-LD/robots/sitemap на проде, все 200.
 
+## ✅ Праздничное оформление DONE (та же сессия, PR #9)
+
+- Шрифты-завитушки (Ruslan Display + Playfair Display + PT Serif, next/font/google), кумачово-золотой декор, вензеля, орнамент-полосы, sticky-шапка.
+- Фото-шапки (`_components/Hero.tsx`) на каждой странице: заголовок поверх фото; фото в тексте (`Figure`).
+- 8 свободных фото Wikimedia Commons в `web/public/decor/` (ресайз+сжатие sharp, 2.1 МБ); реестр `lib/imageCredits.ts` + страница `/istochniki-foto`. `/decor` — длинный кэш (next.config.js headers).
+- Логотип НЕ найден в вебе; шапка/подвал готовы принять `<img>` вместо текстового вензеля.
+- Helper для Commons: `scratchpad/commons.mjs` (search/info/dl). Для ВК — паттерн ниже.
+
+## ВК-харвест (готово к запуску, ждёт ключ)
+
+- Канал: шлюз **SARAFAN** (`../setka/docs/GATEWAY.md`), base `https://3931b3fe50ab.vps.myjino.ru`, заголовок `X-API-Key: GATEWAY_KEY_KAZANSKAYA`. **Ключ — owner-действие в env setka на боксе СЕТКА** (SSH-доступа у сессии нет; как GONBA-ключ).
+- РЦКД `dk_malmyzh` = **group 217788511** (альбомы 2024+, festival-специфики мало); «Первый Малмыжский» (15k, активнее). Методы: photos.getAlbums/photos.get/wall.get. Фото → сайт с ссылкой на пост-источник (расширять imageCredits/новый реестр VK).
+- ВК доступен и залогинен в Chrome владельца, но браузерный обход медленный — использовать шлюз.
+
 ## Следующая сессия — добить M2 (≤ 23.07)
 
 - Афиша-2026: пакет района (kazanskaya-2026 на госуслугах) + ВК → занести Events в админку.
-- ВК-харвест: темы 2017–2025, фото в галерею (SARAFAN #062 / вручную).
+- ВК-фото + логотип через SARAFAN (как ключ будет); темы карнавала 2017–2025 → YEAR_THEMES.
 - pageDecor R7, /llms.txt, Метрика. Карту-схему территории — от оргкомитета в FestivalMap.
