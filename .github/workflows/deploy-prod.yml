@@ -151,7 +151,8 @@ jobs:
           rm -f /tmp/kazanskaya-app.tgz
           # Персистентное медиа (G146): public/media в релизе → симлинк на shared/media,
           # переживающий деплои.
-          mkdir -p "$BASE/shared/media"
+          # public/ может отсутствовать в артефакте (пока в репо нет web/public) — создаём.
+          mkdir -p "$BASE/shared/media" "$REL/public"
           rm -rf "$REL/public/media"
           ln -sfn "$BASE/shared/media" "$REL/public/media"
           ln -sfn "$REL" "$BASE/current"
