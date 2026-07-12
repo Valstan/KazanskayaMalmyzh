@@ -45,10 +45,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <header className="site-header">
           <div className="wrap site-header__inner">
-            <Link href="/" className="brand">
-              <span className="brand__mark" aria-hidden>❧</span>
+            <Link href="/" className="brand" aria-label="Ярмарка Казанская — на главную">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="brand__logo" src="/decor/logo.png" alt="" width={44} height={54} />
               <span className="brand__text">Ярмарка&nbsp;Казанская</span>
-              <span className="brand__mark brand__mark--flip" aria-hidden>❧</span>
             </Link>
             <nav className="site-nav">
               {NAV.map((item) => (
@@ -66,6 +66,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="site-footer">
           <div className="ornament ornament--gold" aria-hidden />
           <div className="wrap site-footer__inner">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="site-footer__logo" src="/decor/logo.png" alt="Логотип Ярмарки Казанской" width={96} height={118} />
             <p className="site-footer__brand">Ярмарка&nbsp;Казанская</p>
             <p>
               {FEST_DATE_HUMAN} · г. Малмыж, Кировская область. С девяти утра субботы — до утра

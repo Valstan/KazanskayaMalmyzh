@@ -9,17 +9,23 @@ export function Hero({
   kicker,
   title,
   subtitle,
+  logo,
   children,
 }: {
   image: string
   kicker?: string
   title: string
   subtitle?: string
+  logo?: boolean
   children?: React.ReactNode
 }) {
   return (
     <section className="hero" style={{ backgroundImage: `url(/decor/${image}.jpg)` }}>
       <div className="hero__inner">
+        {logo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="hero__logo" src="/decor/logo.png" alt="Логотип Ярмарки Казанской" width={150} height={184} />
+        ) : null}
         {kicker ? <p className="kicker" style={{ color: 'var(--fair-gold-bright)' }}>{kicker}</p> : null}
         <h1>{title}</h1>
         {subtitle ? <p className="hero__subtitle">{subtitle}</p> : null}
