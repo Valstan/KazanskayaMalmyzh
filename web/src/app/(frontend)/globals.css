@@ -1,98 +1,329 @@
-/* Тема «Ярмарка Казанская» — research-first (kazanskaya-visual-research):
-   карнавальное многоцветье + купеческо-ярмарочный слой (кумач, золото, тёмное
-   дерево, крафт-бумага) + орнаментальность четырёх народов (без прямого копирования
-   конкретных орнаментов — полосы-«вышивки» из CSS). */
+/* ==========================================================================
+   «Ярмарка Казанская» — праздничная тема (research-first, kazanskaya-visual-research):
+   купеческо-ярмарочный дух (кумач, золото, тёмное дерево, крафт-лён) + карнавальное
+   многоцветье + орнаментальность четырёх народов. Завитушки, вензеля, фото-шапки.
+   ========================================================================== */
 :root {
-  --fair-red: #a4243b;      /* кумач */
+  --fair-red: #a4243b;       /* кумач */
   --fair-red-dark: #7c1b2d;
-  --fair-gold: #d8a548;     /* золото куполов и колосьев */
-  --fair-cream: #f8f1e5;    /* крафт/лён */
-  --fair-ink: #2b1d16;      /* тёмное дерево */
-  --fair-green: #3e6b48;    /* луговая зелень (марийский/удмуртский слой) */
-  --fair-blue: #2e5a80;     /* речной — Шошма/Вятка */
+  --fair-red-deep: #5c141f;
+  --fair-gold: #d8a548;      /* золото куполов и колосьев */
+  --fair-gold-bright: #f0c667;
+  --fair-cream: #f7efe0;     /* крафт / лён */
+  --fair-cream-2: #fbf6ec;
+  --fair-ink: #2b1d16;       /* тёмное дерево */
+  --fair-green: #3e6b48;     /* луговая зелень */
+  --fair-blue: #2e5a80;      /* речной — Шошма/Вятка */
+
+  --font-display-f: var(--font-display), 'Georgia', serif;
+  --font-heading-f: var(--font-heading), 'Georgia', serif;
+  --font-body-f: var(--font-body), 'Georgia', 'Times New Roman', serif;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+html { scroll-behavior: smooth; }
+
 body {
-  font-family: Georgia, 'Times New Roman', serif;
-  background: var(--fair-cream);
+  font-family: var(--font-body-f);
   color: var(--fair-ink);
-  line-height: 1.65;
+  line-height: 1.7;
+  /* Крафт-фон с едва заметным золотым орнаментом-горошком */
+  background-color: var(--fair-cream);
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(168, 36, 59, 0.05) 1px, transparent 0),
+    radial-gradient(circle at 15px 15px, rgba(216, 165, 72, 0.06) 1.5px, transparent 0);
+  background-size: 30px 30px, 30px 30px;
 }
 
-a { color: var(--fair-red); }
+a { color: var(--fair-red); text-underline-offset: 2px; }
+a:hover { color: var(--fair-red-dark); }
 
-.wrap { max-width: 860px; margin: 0 auto; padding: 0 1.25rem; }
+.wrap { max-width: 900px; margin: 0 auto; padding: 0 1.25rem; }
 
-/* Шапка */
-.site-header {
-  background: var(--fair-red);
-  color: var(--fair-cream);
-  border-bottom: 6px double var(--fair-gold);
-}
-.site-header .wrap {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.5rem;
-  padding-top: 0.9rem; padding-bottom: 0.9rem;
-}
-.brand { font-size: 1.25rem; font-weight: bold; color: var(--fair-cream); text-decoration: none; }
-.site-nav { display: flex; flex-wrap: wrap; gap: 0.2rem 1.1rem; font-size: 0.95rem; }
-.site-nav a { color: var(--fair-cream); text-decoration: none; opacity: 0.92; }
-.site-nav a:hover { text-decoration: underline; opacity: 1; }
-
-/* Орнаментальная полоса-разделитель («вышивка») */
+/* ---------- Орнаментальные разделители («вышивка») ---------- */
 .ornament {
-  height: 10px;
+  height: 12px;
   background:
     repeating-linear-gradient(90deg,
-      var(--fair-gold) 0 8px, transparent 8px 16px,
-      var(--fair-green) 16px 24px, transparent 24px 32px,
-      var(--fair-blue) 32px 40px, transparent 40px 48px);
-  opacity: 0.85;
+      var(--fair-gold) 0 9px, transparent 9px 18px,
+      var(--fair-green) 18px 27px, transparent 27px 36px,
+      var(--fair-blue) 36px 45px, transparent 45px 54px,
+      var(--fair-red) 54px 63px, transparent 63px 72px);
+}
+.ornament--gold {
+  background: repeating-linear-gradient(90deg,
+    var(--fair-gold) 0 6px, var(--fair-red-deep) 6px 12px);
+  height: 8px;
+  opacity: 0.9;
 }
 
-main { padding: 2rem 0 3rem; }
-main h1 { color: var(--fair-red); font-size: clamp(1.8rem, 5vw, 2.6rem); margin-bottom: 0.75rem; }
-main h2 { color: var(--fair-red-dark); margin: 1.8rem 0 0.6rem; font-size: 1.3rem; }
-main p + p { margin-top: 0.7rem; }
-main ul, main ol { margin: 0.5rem 0 0.5rem 1.4rem; }
+/* Вензель-разделитель между секциями */
+.flourish {
+  text-align: center;
+  color: var(--fair-gold);
+  font-size: 1.6rem;
+  margin: 2.2rem 0 1.2rem;
+  letter-spacing: 0.5rem;
+  line-height: 1;
+}
+.flourish::before { content: '❧ ✦ ❧'; }
 
-.kicker { text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.78rem; color: var(--fair-red); }
-.lead { font-size: 1.1rem; }
+/* ---------- Шапка сайта ---------- */
+.site-header {
+  background:
+    linear-gradient(180deg, var(--fair-red) 0%, var(--fair-red-dark) 100%);
+  color: var(--fair-cream);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.site-header__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem 1.5rem;
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display-f);
+  font-size: 1.5rem;
+  color: var(--fair-cream);
+  text-decoration: none;
+  text-shadow: 0 1px 0 var(--fair-red-deep);
+  letter-spacing: 0.02em;
+}
+.brand__mark { color: var(--fair-gold-bright); font-size: 1.2rem; }
+.brand__mark--flip { transform: scaleX(-1); }
+.brand:hover { color: #fff; }
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1.15rem;
+  font-family: var(--font-heading-f);
+  font-size: 1rem;
+  font-weight: 600;
+}
+.site-nav a {
+  color: var(--fair-cream);
+  text-decoration: none;
+  opacity: 0.92;
+  padding: 0.15rem 0;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.15s, opacity 0.15s;
+}
+.site-nav a:hover { opacity: 1; border-bottom-color: var(--fair-gold-bright); }
+
+/* ---------- Hero с фото-фоном и названием поверх ---------- */
+.hero {
+  position: relative;
+  color: #fff;
+  text-align: center;
+  padding: clamp(3rem, 12vw, 6.5rem) 1.25rem clamp(2.5rem, 9vw, 5rem);
+  background-size: cover;
+  background-position: center;
+  background-color: var(--fair-red-deep);
+  isolation: isolate;
+  overflow: hidden;
+}
+/* Затемняющий градиент — чтобы текст читался поверх фото */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, rgba(44, 20, 14, 0.35) 0%, rgba(92, 20, 31, 0.72) 100%);
+}
+.hero__inner { max-width: 820px; margin: 0 auto; }
+.hero .kicker {
+  font-family: var(--font-heading-f);
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--fair-gold-bright);
+  margin-bottom: 0.4rem;
+}
+.hero h1 {
+  font-family: var(--font-display-f);
+  font-weight: 400;
+  font-size: clamp(2.3rem, 8vw, 4.6rem);
+  line-height: 1.05;
+  margin: 0.2rem 0;
+  color: #fff;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5), 0 0 2px rgba(0, 0, 0, 0.4);
+}
+.hero__subtitle {
+  font-family: var(--font-heading-f);
+  font-size: clamp(1.05rem, 3.4vw, 1.5rem);
+  margin-top: 0.5rem;
+  color: var(--fair-cream);
+}
+.hero__date {
+  display: inline-block;
+  margin-top: 1.1rem;
+  padding: 0.4rem 1.2rem;
+  border: 2px solid var(--fair-gold);
+  border-radius: 999px;
+  background: rgba(92, 20, 31, 0.5);
+  font-family: var(--font-heading-f);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+.hero__theme { margin-top: 1rem; font-size: 1.05rem; }
+.hero__theme strong { color: var(--fair-gold-bright); }
+/* Кредит-подпись к фото шапки */
+.hero__credit {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.4rem;
+  z-index: 1;
+  font-family: var(--font-body-f);
+  font-size: 0.66rem;
+  color: rgba(255, 255, 255, 0.62);
+  text-decoration: none;
+}
+.hero__credit:hover { color: rgba(255, 255, 255, 0.9); }
+
+/* ---------- Основной контент ---------- */
+main { display: block; }
+.section { padding: 2.2rem 0; }
+.section--tight { padding: 1.2rem 0; }
+
+main h2 {
+  font-family: var(--font-heading-f);
+  font-weight: 800;
+  color: var(--fair-red-dark);
+  font-size: clamp(1.35rem, 4vw, 1.8rem);
+  margin: 1.8rem 0 0.7rem;
+  line-height: 1.2;
+}
+main h2:first-child { margin-top: 0; }
+/* Золотой вензель у заголовков раздела */
+main h2::before {
+  content: '❦ ';
+  color: var(--fair-gold);
+  font-weight: 400;
+}
+main h3 { font-family: var(--font-heading-f); color: var(--fair-red); font-size: 1.1rem; }
+main p { margin: 0 0 0.75rem; }
+main .lead { font-size: 1.14rem; }
+main ul, main ol { margin: 0.4rem 0 1rem 1.4rem; }
+main li { margin-bottom: 0.25rem; }
+.kicker { text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.78rem; color: var(--fair-red); font-weight: 700; }
 .muted { opacity: 0.72; font-size: 0.92rem; }
 
-/* Герой главной */
-.hero { text-align: center; padding: 2.5rem 0 1.5rem; }
-.hero h1 { font-size: clamp(2.4rem, 8vw, 4rem); margin: 0.4rem 0; }
-.hero .date { font-size: 1.35rem; font-weight: bold; }
-.hero .theme { margin-top: 0.8rem; font-size: 1.1rem; }
-
-/* Карточки-разделы */
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
-.card {
-  background: #fff; border: 1px solid #e4d9c3; border-top: 4px solid var(--fair-gold);
-  border-radius: 6px; padding: 1rem 1.1rem; text-decoration: none; color: var(--fair-ink);
+/* ---------- Фото в тексте (figure) ---------- */
+.figure {
+  margin: 1.4rem 0;
+  border: 1px solid #e2d4b8;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--fair-cream-2);
+  box-shadow: 0 3px 14px rgba(43, 29, 22, 0.08);
 }
-.card h3 { color: var(--fair-red); margin-bottom: 0.35rem; font-size: 1.05rem; }
-.card p { font-size: 0.92rem; opacity: 0.85; }
+.figure img { display: block; width: 100%; height: auto; }
+.figure figcaption {
+  padding: 0.55rem 0.85rem;
+  font-size: 0.86rem;
+  color: var(--fair-ink);
+  opacity: 0.82;
+  border-top: 2px solid var(--fair-gold);
+}
+.figure--float-right {
+  float: right;
+  width: min(46%, 360px);
+  margin: 0.3rem 0 1rem 1.4rem;
+}
+@media (max-width: 640px) {
+  .figure--float-right { float: none; width: 100%; margin: 1.2rem 0; }
+}
 
-/* Таблица годов */
-.years { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-.years th, .years td { text-align: left; padding: 0.55rem 0.7rem; border-bottom: 1px solid #e4d9c3; vertical-align: top; }
-.years th { color: var(--fair-red-dark); border-bottom: 2px solid var(--fair-gold); }
-.years .y { font-weight: bold; white-space: nowrap; }
+/* ---------- Карточки-разделы ---------- */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; margin-top: 1.4rem; }
+.card {
+  display: block;
+  background: var(--fair-cream-2);
+  border: 1px solid #e6d9bd;
+  border-top: 4px solid var(--fair-gold);
+  border-radius: 8px;
+  padding: 1rem 1.15rem;
+  text-decoration: none;
+  color: var(--fair-ink);
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(124, 27, 45, 0.14);
+  border-top-color: var(--fair-red);
+}
+.card h3 { margin-bottom: 0.35rem; color: var(--fair-red); }
+.card p { font-size: 0.93rem; opacity: 0.86; margin: 0; }
 
-/* Программа */
-.event { background: #fff; border: 1px solid #e4d9c3; border-left: 4px solid var(--fair-red); border-radius: 6px; padding: 0.85rem 1rem; margin-top: 0.8rem; }
-.event .when { font-weight: bold; color: var(--fair-red-dark); }
+/* ---------- Таблица годов ---------- */
+.years-wrap { overflow-x: auto; }
+.years { width: 100%; border-collapse: collapse; margin-top: 1rem; min-width: 520px; }
+.years th, .years td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid #e6d9bd; vertical-align: top; }
+.years th { font-family: var(--font-heading-f); color: var(--fair-red-dark); border-bottom: 2px solid var(--fair-gold); }
+.years tbody tr:hover { background: rgba(216, 165, 72, 0.09); }
+.years .y { font-weight: 700; white-space: nowrap; font-family: var(--font-heading-f); color: var(--fair-red); }
+
+/* ---------- Программа ---------- */
+.event {
+  background: var(--fair-cream-2);
+  border: 1px solid #e6d9bd;
+  border-left: 5px solid var(--fair-red);
+  border-radius: 8px;
+  padding: 0.9rem 1.1rem;
+  margin-top: 0.85rem;
+}
+.event .when { font-family: var(--font-heading-f); font-weight: 700; color: var(--fair-red-dark); }
 .event .where { font-size: 0.9rem; opacity: 0.75; }
 
+/* ---------- Плашка-уведомление ---------- */
 .notice {
-  background: #fff8ec; border: 1px solid var(--fair-gold); border-radius: 6px;
-  padding: 0.9rem 1.1rem; margin-top: 1.2rem; font-size: 0.95rem;
+  background: linear-gradient(180deg, #fff9ee, #fbf1da);
+  border: 1px solid var(--fair-gold);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  margin: 1.3rem 0;
+  font-size: 0.97rem;
+  position: relative;
+}
+.notice::before {
+  content: '✦';
+  color: var(--fair-gold);
+  margin-right: 0.4rem;
 }
 
-/* Подвал */
-.site-footer { border-top: 6px double var(--fair-gold); background: var(--fair-ink); color: var(--fair-cream); }
-.site-footer .wrap { padding: 1.4rem 1.25rem; font-size: 0.88rem; opacity: 0.9; }
-.site-footer a { color: var(--fair-gold); }
+/* ---------- Реестр источников ---------- */
+.credits-list { list-style: none; margin: 1.2rem 0 0; padding: 0; }
+.credits-list li {
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #e6d9bd;
+  font-size: 0.94rem;
+}
+.credits-list .c-title { font-weight: 700; }
+.credits-list .c-meta { display: block; opacity: 0.8; font-size: 0.86rem; margin-top: 0.15rem; }
+
+/* ---------- Подвал ---------- */
+.site-footer { background: var(--fair-ink); color: var(--fair-cream); margin-top: 2rem; }
+.site-footer__inner { padding: 1.6rem 1.25rem 2rem; font-size: 0.9rem; text-align: center; }
+.site-footer__brand {
+  font-family: var(--font-display-f);
+  font-size: 1.5rem;
+  color: var(--fair-gold-bright);
+  margin-bottom: 0.6rem;
+}
+.site-footer p { margin: 0.25rem 0; opacity: 0.9; }
+.site-footer a { color: var(--fair-gold-bright); }
+.site-footer__links { margin-top: 0.8rem; }

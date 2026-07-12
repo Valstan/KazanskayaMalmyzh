@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
+import { Hero } from '../_components/Hero'
 
 export const revalidate = 60
 
@@ -27,29 +28,33 @@ export default async function GalleryPage() {
 
   return (
     <main>
+      <Hero image="carousel" kicker="Фото и видео" title="Галерея" subtitle="Праздник в лицах и красках" />
+
       <div className="wrap">
-        <p className="kicker">Фото и видео</p>
-        <h1>Галерея</h1>
-        {albums.length > 0 ? (
-          <div className="cards">
-            {albums.map((a) => (
-              <div className="card" key={a.id}>
-                <h3>{a.title}</h3>
-                {a.description ? <p>{a.description}</p> : null}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <>
-            <p className="lead">
-              Альбомы прошлых лет и фотографии праздника 2026 года появятся здесь.
-            </p>
-            <div className="notice">
-              У вас есть фотографии с ярмарок прошлых лет? Мы собираем архив — напишите оргкомитету
-              (телефоны внизу страницы).
+        <div className="flourish" aria-hidden />
+
+        <section className="section section--tight">
+          {albums.length > 0 ? (
+            <div className="cards">
+              {albums.map((a) => (
+                <div className="card" key={a.id}>
+                  <h3>{a.title}</h3>
+                  {a.description ? <p>{a.description}</p> : null}
+                </div>
+              ))}
             </div>
-          </>
-        )}
+          ) : (
+            <>
+              <p className="lead">
+                Альбомы прошлых лет и фотографии праздника 2026 года появятся здесь.
+              </p>
+              <div className="notice">
+                У вас есть фотографии с ярмарок прошлых лет? Мы собираем архив — напишите оргкомитету
+                (телефоны внизу страницы).
+              </div>
+            </>
+          )}
+        </section>
       </div>
     </main>
   )
