@@ -1,5 +1,7 @@
 # PENDING_FOLLOWUPS — отложенные хвосты
 
+- [ ] **HTTPS (owner):** внешний :443 Jino не проброшен на бокс (прокси Джино, серт *.jino.ru) — сайт на http, как Сабантуй. Владельцу: панель Джино → VPS → проброс 443/выделенный IP; nginx с LE-сертом уже готов. Письмо: mailbox/to-brain/2026-07-12-https-jino-443-gotcha.md.
+
 - [x] TLS (Let's Encrypt) — выпущен 2026-07-12 (certbot --nginx, авто-продление стандартным таймером certbot).
 - [x] KARMAN-зеркало (ADR-0006) — комната `kazanskayamalmyzh` (id=11), rw-токен, 6 секретов; токен также в `~/.kazanskaya_karman_token` dev-машины.
 - [x] Первый админ Payload создан (креды в KARMAN: PAYLOAD_ADMIN_EMAIL/PASSWORD).
