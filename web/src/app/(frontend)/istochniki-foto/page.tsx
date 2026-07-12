@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { IMAGE_CREDITS } from '../../../lib/imageCredits'
+import { VK_CARNIVAL, VK_ALBUM, VK_GROUP, VK_GROUP_NAME } from '../../../lib/vkCredits'
 import { Hero } from '../_components/Hero'
 
 // /istochniki-foto — атрибуция свободных фотографий (Wikimedia Commons) одной
@@ -51,10 +52,30 @@ export default function CreditsPage() {
             ))}
           </ul>
 
+          <h2>Фотографии праздника из ВКонтакте</h2>
+          <p>
+            Событийные снимки Ярмарки Казанской взяты из паблика{' '}
+            <a href={VK_GROUP} target="_blank" rel="noreferrer noopener">{VK_GROUP_NAME}</a> — альбом{' '}
+            <a href={VK_ALBUM} target="_blank" rel="noreferrer noopener">«Ярмарка Казанская 2024 Карнавал»</a>.
+            Каждая фотография ведёт на свой пост-источник.
+          </p>
+          <ul className="credits-list">
+            {VK_CARNIVAL.map((c) => (
+              <li key={c.slug}>
+                <span className="c-title">{c.caption}</span>
+                <span className="c-meta">
+                  {VK_GROUP_NAME} ·{' '}
+                  <a href={c.source} target="_blank" rel="noreferrer noopener">
+                    фото в ВКонтакте ↗
+                  </a>
+                </span>
+              </li>
+            ))}
+          </ul>
+
           <div className="notice">
-            Фотографии самого праздника из пабликов Малмыжского района публикуются с указанием
-            источника по мере сбора. Если вы автор снимка и хотите изменить подпись или убрать
-            фото — напишите оргкомитету, мы оперативно поправим.
+            Если вы автор снимка и хотите изменить подпись или убрать фото — напишите оргкомитету,
+            мы оперативно поправим.
           </div>
         </section>
       </div>
