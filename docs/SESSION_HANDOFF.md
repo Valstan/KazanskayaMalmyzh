@@ -17,13 +17,14 @@
 - Деплой зелёный, смоук #011 прошёл; TLS выпущен certbot; **https://казанская.вмалмыже.рф/ = 200 + маркер**.
 - ⚠️ SSH на бокс с dev-машины РАБОТАЕТ (G8 не подтверждён для SSH); HTTP с dev-машины глохнет (G147 DPI) — проверять сайт с бокса или по DNS 8.8.8.8.
 
-## Блокер-хвост (owner)
+## ✅ M2-инкремент DONE (та же сессия, PR #4)
 
-- KARMAN-зеркало (ADR-0006): завести комнату `kazanskayamalmyzh` + rw-токен в KARMAN → /secrets; зеркалировать deploy-ключ, DATABASE_URL, PAYLOAD_SECRET.
+- KARMAN: комната `kazanskayamalmyzh` (id=11) + rw-токен (и в `~/.kazanskaya_karman_token`), 6 секретов зазеркалированы. UI /secrets требует MFA — делали серверно (SSH Бокс 1 с dev-машины работает, ключ id_ed25519).
+- Прод-БД: initial-миграция (#017) применена через SSH-туннель (`payload migrate` c dev-машины); **новые миграции — тем же способом, деплой после них через workflow_dispatch (гвард)**.
+- Первый админ создан (креды в KARMAN). Тема research-first, /history /years /program /map /gallery + JSON-LD/robots/sitemap на проде, все 200.
 
-## Следующая сессия — M2 (≤ 23.07)
+## Следующая сессия — добить M2 (≤ 23.07)
 
-- Research-first дизайн: перечитать `../brain_matrica/docs/plans/kazanskaya-visual-research.md` + history-research; палитра/разделы из духа праздника, pageDecor R7.
-- Страницы истории, программа-2026, карта (FestivalMap), галерея, темы по годам («Как это было»), SEO #051.
-- Снять пакет документов «Ярмарка Казанская-2026»: https://malmyzh43.gosuslugi.ru/deyatelnost/napravleniya-deyatelnosti/sabantuy-kazanskaya-yarmarka/kazanskaya-2026/
-- Создать первого админа Payload (сейчас /admin предлагает регистрацию первого пользователя — сделать при старте M2, логин сохранить в KARMAN).
+- Афиша-2026: пакет района (kazanskaya-2026 на госуслугах) + ВК → занести Events в админку.
+- ВК-харвест: темы 2017–2025, фото в галерею (SARAFAN #062 / вручную).
+- pageDecor R7, /llms.txt, Метрика. Карту-схему территории — от оргкомитета в FestivalMap.
