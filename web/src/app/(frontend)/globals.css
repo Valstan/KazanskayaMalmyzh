@@ -1,81 +1,98 @@
-/* M1-заглушка. Палитра — первый намёк на ярмарочно-купеческий дух (кумач, золото,
-   тёмное дерево); полноценная research-first тема — в M2 по visual-research. */
+/* Тема «Ярмарка Казанская» — research-first (kazanskaya-visual-research):
+   карнавальное многоцветье + купеческо-ярмарочный слой (кумач, золото, тёмное
+   дерево, крафт-бумага) + орнаментальность четырёх народов (без прямого копирования
+   конкретных орнаментов — полосы-«вышивки» из CSS). */
 :root {
-  --fair-red: #a4243b;
-  --fair-gold: #d8a548;
-  --fair-cream: #f8f1e5;
-  --fair-ink: #2b1d16;
+  --fair-red: #a4243b;      /* кумач */
+  --fair-red-dark: #7c1b2d;
+  --fair-gold: #d8a548;     /* золото куполов и колосьев */
+  --fair-cream: #f8f1e5;    /* крафт/лён */
+  --fair-ink: #2b1d16;      /* тёмное дерево */
+  --fair-green: #3e6b48;    /* луговая зелень (марийский/удмуртский слой) */
+  --fair-blue: #2e5a80;     /* речной — Шошма/Вятка */
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
   font-family: Georgia, 'Times New Roman', serif;
   background: var(--fair-cream);
   color: var(--fair-ink);
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
-.landing {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 3rem 1.25rem 2rem;
-  text-align: center;
+a { color: var(--fair-red); }
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 1.25rem; }
+
+/* Шапка */
+.site-header {
+  background: var(--fair-red);
+  color: var(--fair-cream);
+  border-bottom: 6px double var(--fair-gold);
+}
+.site-header .wrap {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.5rem;
+  padding-top: 0.9rem; padding-bottom: 0.9rem;
+}
+.brand { font-size: 1.25rem; font-weight: bold; color: var(--fair-cream); text-decoration: none; }
+.site-nav { display: flex; flex-wrap: wrap; gap: 0.2rem 1.1rem; font-size: 0.95rem; }
+.site-nav a { color: var(--fair-cream); text-decoration: none; opacity: 0.92; }
+.site-nav a:hover { text-decoration: underline; opacity: 1; }
+
+/* Орнаментальная полоса-разделитель («вышивка») */
+.ornament {
+  height: 10px;
+  background:
+    repeating-linear-gradient(90deg,
+      var(--fair-gold) 0 8px, transparent 8px 16px,
+      var(--fair-green) 16px 24px, transparent 24px 32px,
+      var(--fair-blue) 32px 40px, transparent 40px 48px);
+  opacity: 0.85;
 }
 
-.hero .kicker {
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  font-size: 0.8rem;
-  color: var(--fair-red);
+main { padding: 2rem 0 3rem; }
+main h1 { color: var(--fair-red); font-size: clamp(1.8rem, 5vw, 2.6rem); margin-bottom: 0.75rem; }
+main h2 { color: var(--fair-red-dark); margin: 1.8rem 0 0.6rem; font-size: 1.3rem; }
+main p + p { margin-top: 0.7rem; }
+main ul, main ol { margin: 0.5rem 0 0.5rem 1.4rem; }
+
+.kicker { text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.78rem; color: var(--fair-red); }
+.lead { font-size: 1.1rem; }
+.muted { opacity: 0.72; font-size: 0.92rem; }
+
+/* Герой главной */
+.hero { text-align: center; padding: 2.5rem 0 1.5rem; }
+.hero h1 { font-size: clamp(2.4rem, 8vw, 4rem); margin: 0.4rem 0; }
+.hero .date { font-size: 1.35rem; font-weight: bold; }
+.hero .theme { margin-top: 0.8rem; font-size: 1.1rem; }
+
+/* Карточки-разделы */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+.card {
+  background: #fff; border: 1px solid #e4d9c3; border-top: 4px solid var(--fair-gold);
+  border-radius: 6px; padding: 1rem 1.1rem; text-decoration: none; color: var(--fair-ink);
+}
+.card h3 { color: var(--fair-red); margin-bottom: 0.35rem; font-size: 1.05rem; }
+.card p { font-size: 0.92rem; opacity: 0.85; }
+
+/* Таблица годов */
+.years { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.years th, .years td { text-align: left; padding: 0.55rem 0.7rem; border-bottom: 1px solid #e4d9c3; vertical-align: top; }
+.years th { color: var(--fair-red-dark); border-bottom: 2px solid var(--fair-gold); }
+.years .y { font-weight: bold; white-space: nowrap; }
+
+/* Программа */
+.event { background: #fff; border: 1px solid #e4d9c3; border-left: 4px solid var(--fair-red); border-radius: 6px; padding: 0.85rem 1rem; margin-top: 0.8rem; }
+.event .when { font-weight: bold; color: var(--fair-red-dark); }
+.event .where { font-size: 0.9rem; opacity: 0.75; }
+
+.notice {
+  background: #fff8ec; border: 1px solid var(--fair-gold); border-radius: 6px;
+  padding: 0.9rem 1.1rem; margin-top: 1.2rem; font-size: 0.95rem;
 }
 
-.hero h1 {
-  font-size: clamp(2.4rem, 8vw, 4rem);
-  color: var(--fair-red);
-  margin: 0.5rem 0;
-}
-
-.hero .date {
-  font-size: 1.4rem;
-  font-weight: bold;
-}
-
-.hero .theme {
-  margin-top: 1rem;
-  font-size: 1.1rem;
-}
-
-.theme-note {
-  font-size: 0.9rem;
-  opacity: 0.75;
-}
-
-.teaser {
-  margin-top: 3rem;
-  padding: 1.5rem;
-  border-top: 3px double var(--fair-gold);
-  border-bottom: 3px double var(--fair-gold);
-}
-
-.teaser h2 {
-  color: var(--fair-red);
-  font-size: 1.3rem;
-  margin-bottom: 1rem;
-}
-
-.teaser .soon {
-  margin-top: 1rem;
-  font-style: italic;
-  opacity: 0.8;
-}
-
-.foot {
-  margin-top: 2.5rem;
-  font-size: 0.85rem;
-  opacity: 0.7;
-}
+/* Подвал */
+.site-footer { border-top: 6px double var(--fair-gold); background: var(--fair-ink); color: var(--fair-cream); }
+.site-footer .wrap { padding: 1.4rem 1.25rem; font-size: 0.88rem; opacity: 0.9; }
+.site-footer a { color: var(--fair-gold); }
