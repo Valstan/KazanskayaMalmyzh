@@ -321,6 +321,7 @@ main li { margin-bottom: 0.25rem; }
 .photo-grid__item {
   position: relative;
   display: block;
+  margin: 0;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid #e2d4b8;
