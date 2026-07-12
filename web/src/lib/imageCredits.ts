@@ -31,7 +31,7 @@ export const IMAGE_CREDITS: ImageCredit[] = [
     license: 'CC BY-SA 4.0',
     licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0',
     sourceUrl: 'https://commons.wikimedia.org/wiki/File:Tatar_dance_at_the_Sabantuy_festival,_Kirov.jpg',
-    usage: 'Главная — шапка (фольклорный танец на празднике в Кировской области)',
+    usage: 'Программа — шапка (фольклорный танец на празднике в Кировской области)',
   },
   {
     slug: 'malmyzh-cathedral',
@@ -68,15 +68,6 @@ export const IMAGE_CREDITS: ImageCredit[] = [
     licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0',
     sourceUrl: 'https://commons.wikimedia.org/wiki/File:Марийский_фольклорный_ансамбль_в_национальных_костюмах3.jpg',
     usage: 'История / Годы — народы Малмыжа (марийский ансамбль)',
-  },
-  {
-    slug: 'folk-crowd',
-    title: 'Масленица. Йошкар-Ола, 25 февраля 2017',
-    author: 'Petr Vasiliev',
-    license: 'CC BY-SA 4.0',
-    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0',
-    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Масленица._Йошкар-Ола3._25_фев._2017.jpg',
-    usage: 'Как это было — шапка (народный праздник)',
   },
   {
     slug: 'carousel',

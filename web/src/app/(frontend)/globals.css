@@ -305,6 +305,42 @@ main li { margin-bottom: 0.25rem; }
   margin-right: 0.4rem;
 }
 
+/* ---------- Фото-сетка галереи ---------- */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 0.8rem;
+  margin: 1.2rem 0;
+}
+.photo-grid__item {
+  position: relative;
+  display: block;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2d4b8;
+  box-shadow: 0 3px 12px rgba(43, 29, 22, 0.1);
+  aspect-ratio: 3 / 2;
+  text-decoration: none;
+}
+.photo-grid__item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s;
+}
+.photo-grid__item:hover img { transform: scale(1.05); }
+.photo-grid__cap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.9rem 0.6rem 0.4rem;
+  font-size: 0.78rem;
+  color: #fff;
+  background: linear-gradient(180deg, transparent, rgba(44, 20, 14, 0.82));
+}
+
 /* ---------- Реестр источников ---------- */
 .credits-list { list-style: none; margin: 1.2rem 0 0; padding: 0; }
 .credits-list li {

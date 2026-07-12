@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
-import { Hero } from '../_components/Hero'
+import { Hero, Figure } from '../_components/Hero'
 
 export const revalidate = 60
 
@@ -35,7 +35,7 @@ export default async function ProgramPage() {
 
   return (
     <main>
-      <Hero image="fireworks" kicker="25 июля 2026" title="Программа праздника" subtitle="От утреннего шествия до ночного фейерверка" />
+      <Hero image="hero-fair" kicker="25 июля 2026" title="Программа праздника" subtitle="От утреннего шествия до ночного фейерверка" />
 
       <div className="wrap">
         <div className="flourish" aria-hidden />
@@ -64,6 +64,11 @@ export default async function ProgramPage() {
               <li><strong>Вторая половина дня</strong> — конкурсы ремёсел и национальных подворий, «Куштымаш», концерты.</li>
               <li><strong>Вечер и ночь</strong> — вечерняя программа, дискотека и фейерверк; праздник длится до утра воскресенья.</li>
             </ul>
+            <Figure
+              image="fireworks"
+              alt="Праздничный фейерверк в ночном небе"
+              caption="Финал праздника — фейерверк над Малмыжем"
+            />
             <div className="notice">
               Праздник начинается в 9 утра субботы. Центр города в этот день перекрыт для
               автотранспорта — планируйте дорогу заранее.
