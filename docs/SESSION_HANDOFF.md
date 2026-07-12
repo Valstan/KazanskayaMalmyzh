@@ -9,13 +9,21 @@
 - Локализация НЕ включена сознательно (kickoff §3).
 - typecheck + lint зелёные локально; сборка — только в CI (G20).
 
-## Блокеры (owner)
+## ✅ M1 DONE (2026-07-12, та же сессия)
 
-1. **Deploy-ключ #001 (изолированный, НЕ сабантуевский)** — запрошен в отчёте сессии 1 (R14-паттерн). Нужно: secrets.SSH_PRIVATE_KEY + vars.DEPLOY_SSH_HOST/DEPLOY_SSH_PORT/NEXT_PUBLIC_SERVER_URL в репо GitHub. После выдачи — зеркало в KARMAN (ADR-0006).
-2. На боксе перед первым деплоем (owner/сессия с доступом): создать БД `kazanskaya` + роль `kazanskaya_app`, `/etc/kazanskaya/kazanskaya.env` (по `deploy/kazanskaya.env.example`), установить юнит, добавить pubkey в authorized_keys, sudoers-правило для `systemctl restart kazanskaya`, TLS (Let's Encrypt) после первого деплоя.
+- Владелец делегировал ключ сессии → сгенерирован `~/.ssh/id_ed25519_kazanskaya` (dev-машина), pubkey в authorized_keys бокса, приватная часть в secrets.SSH_PRIVATE_KEY; vars DEPLOY_SSH_HOST/PORT/NEXT_PUBLIC_SERVER_URL заданы.
+- Бокс подготовлен по SSH с dev-машины (ключ sabantuy, sudo NOPASSWD): БД `kazanskaya`+роль (пароль только в `/etc/kazanskaya/kazanskaya.env`), юнит, nginx-vhost казанская → :3001.
+- PR #2 — фикс `mkdir -p $REL/public` (в артефакте нет public/, пока нет web/public).
+- Деплой зелёный, смоук #011 прошёл; TLS выпущен certbot; **https://казанская.вмалмыже.рф/ = 200 + маркер**.
+- ⚠️ SSH на бокс с dev-машины РАБОТАЕТ (G8 не подтверждён для SSH); HTTP с dev-машины глохнет (G147 DPI) — проверять сайт с бокса или по DNS 8.8.8.8.
 
-## Следующая сессия
+## Блокер-хвост (owner)
 
-- Если ключ выдан: прогнать деплой, DoD M1 (https://казанская.вмалмыже.рф/ = 200 + маркер), TLS.
-- Затем M2 research-first: перечитать `../brain_matrica/docs/plans/kazanskaya-visual-research.md` + history-research; страницы истории, программа, карта, темы по годам, SEO #051.
+- KARMAN-зеркало (ADR-0006): завести комнату `kazanskayamalmyzh` + rw-токен в KARMAN → /secrets; зеркалировать deploy-ключ, DATABASE_URL, PAYLOAD_SECRET.
+
+## Следующая сессия — M2 (≤ 23.07)
+
+- Research-first дизайн: перечитать `../brain_matrica/docs/plans/kazanskaya-visual-research.md` + history-research; палитра/разделы из духа праздника, pageDecor R7.
+- Страницы истории, программа-2026, карта (FestivalMap), галерея, темы по годам («Как это было»), SEO #051.
 - Снять пакет документов «Ярмарка Казанская-2026»: https://malmyzh43.gosuslugi.ru/deyatelnost/napravleniya-deyatelnosti/sabantuy-kazanskaya-yarmarka/kazanskaya-2026/
+- Создать первого админа Payload (сейчас /admin предлагает регистрацию первого пользователя — сделать при старте M2, логин сохранить в KARMAN).
