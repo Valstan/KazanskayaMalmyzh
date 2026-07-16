@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 
 import config from '@payload-config'
 import { Hero, Figure } from '../_components/Hero'
+import { ProgramLive, type ProgramEvent } from '../_components/ProgramLive'
 
 export const revalidate = 60
 
@@ -12,14 +13,8 @@ export const metadata: Metadata = {
     'Программа Ярмарки Казанской — 2026: карнавальное шествие, Город мастеров, Этногород, сцена, торговые ряды и фейерверк. 25 июля 2026, Малмыж.',
 }
 
-const fmtTime = new Intl.DateTimeFormat('ru-RU', {
-  hour: '2-digit',
-  minute: '2-digit',
-  timeZone: 'Europe/Moscow',
-})
-
 export default async function ProgramPage() {
-  let events: { id: number | string; title: string; summary?: string | null; startDate: string; location?: string | null; venue?: string | null }[] = []
+  let events: ProgramEvent[] = []
   try {
     const payload = await getPayload({ config })
     const res = await payload.find({
@@ -59,17 +54,7 @@ export default async function ProgramPage() {
         </figure>
 
         {events.length > 0 ? (
-          <section className="section section--tight">
-            {events.map((e) => (
-              <div className="event" key={e.id}>
-                <div className="when">{fmtTime.format(new Date(e.startDate))} — {e.title}</div>
-                {e.venue || e.location ? (
-                  <div className="where">{[e.venue, e.location].filter(Boolean).join(' · ')}</div>
-                ) : null}
-                {e.summary ? <p>{e.summary}</p> : null}
-              </div>
-            ))}
-          </section>
+          <ProgramLive events={events} />
         ) : (
           <section className="section section--tight">
             <p className="lead">
