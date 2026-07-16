@@ -4,6 +4,7 @@ import React from 'react'
 import { Ruslan_Display, Playfair_Display, PT_Serif } from 'next/font/google'
 
 import { SITE_URL, SITE_NAME, FEST_DATE_HUMAN } from '../../lib/site'
+import { Metrika } from './_components/Metrika'
 import './globals.css'
 
 // Праздничные шрифты (research-first): орнаментальный дисплей в духе старинных
@@ -81,6 +82,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </p>
           </div>
         </footer>
+        <Metrika />
       </body>
     </html>
   )
