@@ -304,6 +304,54 @@ main li { margin-bottom: 0.25rem; }
 .years tbody tr:hover { background: rgba(216, 165, 72, 0.09); }
 .years .y { font-weight: 700; white-space: nowrap; font-family: var(--font-heading-f); color: var(--fair-red); }
 
+/* Летопись годов: карточки со стрелкой на страницу года. */
+.year-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+.year-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--fair-cream-2);
+  border: 1px solid #e6d9bd;
+  border-top: 4px solid var(--fair-gold);
+  border-radius: 8px;
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+}
+.year-card--link { transition: box-shadow 0.15s ease, transform 0.15s ease; }
+.year-card--link:hover {
+  box-shadow: 0 6px 18px rgba(43, 29, 22, 0.16);
+  transform: translateY(-2px);
+}
+.year-card__thumb { display: block; width: 100%; height: 168px; object-fit: cover; }
+.year-card__body { padding: 0.85rem 1rem 1rem; display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
+.year-card__head { display: flex; align-items: baseline; gap: 0.6rem; }
+.year-card__year {
+  font-family: var(--font-heading-f);
+  font-weight: 800;
+  font-size: 1.45rem;
+  color: var(--fair-red);
+}
+.year-card__date { font-size: 0.88rem; opacity: 0.7; }
+.year-card__theme { font-weight: 700; font-family: var(--font-heading-f); }
+.year-card__note { font-size: 0.88rem; opacity: 0.75; }
+.year-card__more { margin-top: auto; padding-top: 0.5rem; font-weight: 700; color: var(--fair-red-dark); }
+
+/* Навигация между страницами годов */
+.year-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 2px solid var(--fair-gold);
+  font-weight: 700;
+}
+
 /* ---------- Программа ---------- */
 .event {
   background: var(--fair-cream-2);
