@@ -37,6 +37,11 @@ const nextConfig = {
         source: '/decor/:path*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=86400' }],
       },
+      {
+        // Файлы фото годов именуются y<год>-…jpg — HTML-страницы /years/<год> не задевает.
+        source: '/years/y:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=86400' }],
+      },
     ]
   },
   reactStrictMode: true,
