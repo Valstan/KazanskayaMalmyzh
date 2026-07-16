@@ -79,6 +79,15 @@ export const IMAGE_CREDITS: ImageCredit[] = [
     usage: 'Галерея — шапка (карусель)',
   },
   {
+    slug: 'afisha-2026',
+    title: 'Официальная афиша «Ярмарка Казанская — 2026»',
+    author: 'Оргкомитет праздника (РЦКД Малмыж)',
+    license: 'Официальная афиша оргкомитета',
+    licenseUrl: null,
+    sourceUrl: 'https://vk.com/wall-217788511_5327',
+    usage: 'Программа — афиша праздника целиком',
+  },
+  {
     slug: 'fireworks',
     title: 'Celebration Fireworks In The Black Night Sky',
     author: 'Uk2108',
