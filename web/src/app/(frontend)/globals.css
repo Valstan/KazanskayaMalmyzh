@@ -316,6 +316,57 @@ main li { margin-bottom: 0.25rem; }
 .event .when { font-family: var(--font-heading-f); font-weight: 700; color: var(--fair-red-dark); }
 .event .where { font-size: 0.9rem; opacity: 0.75; }
 
+/* Live-режим дня X (M3): статусы событий + баннер «Сейчас идёт / Далее». */
+.event.is-live {
+  border-left-color: var(--fair-gold);
+  box-shadow: 0 0 0 2px var(--fair-gold), 0 4px 14px rgba(43, 29, 22, 0.12);
+}
+.event.is-past { opacity: 0.55; }
+.status-badge {
+  display: inline-block;
+  margin-left: 0.6rem;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-family: var(--font-body-f, inherit);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.status-badge--live {
+  background: var(--fair-red);
+  color: #fff;
+  animation: live-pulse 2s ease-in-out infinite;
+}
+.status-badge--next {
+  background: var(--fair-gold);
+  color: var(--fair-ink);
+}
+@keyframes live-pulse {
+  50% { opacity: 0.65; }
+}
+.now-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.8rem;
+  margin: 1.2rem 0 0.4rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--fair-gold);
+  border-left: 5px solid var(--fair-red);
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(179, 32, 32, 0.08), rgba(201, 154, 44, 0.1));
+}
+.now-banner__label {
+  font-family: var(--font-heading-f);
+  font-weight: 800;
+  color: var(--fair-red-dark);
+  white-space: nowrap;
+}
+.now-banner__label--next { color: var(--fair-ink); }
+.now-banner__body { font-weight: 600; }
+
 /* ---------- Плашка-уведомление ---------- */
 .notice {
   background: linear-gradient(180deg, #fff9ee, #fbf1da);
