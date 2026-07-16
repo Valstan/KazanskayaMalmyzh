@@ -250,6 +250,27 @@ main li { margin-bottom: 0.25rem; }
   width: min(46%, 360px);
   margin: 0.3rem 0 1rem 1.4rem;
 }
+
+/* Афиша-постер (R7): вертикальный официальный плакат, целиком, по центру. */
+.poster {
+  margin: 1.6rem auto;
+  max-width: 560px;
+  border: 1px solid #e2d4b8;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--fair-cream-2);
+  box-shadow: 0 4px 18px rgba(43, 29, 22, 0.12);
+}
+.poster img { display: block; width: 100%; height: auto; }
+.poster figcaption {
+  padding: 0.55rem 0.85rem;
+  font-size: 0.86rem;
+  color: var(--fair-ink);
+  opacity: 0.82;
+  border-top: 2px solid var(--fair-gold);
+  text-align: center;
+}
+.poster figcaption a { color: inherit; }
 @media (max-width: 640px) {
   .figure--float-right { float: none; width: 100%; margin: 1.2rem 0; }
 }

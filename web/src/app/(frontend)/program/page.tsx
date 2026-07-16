@@ -40,6 +40,24 @@ export default async function ProgramPage() {
       <div className="wrap">
         <div className="flourish" aria-hidden />
 
+        {/* Официальная афиша оргкомитета (пост РЦКД ВКонтакте) — показываем целиком (R7). */}
+        <figure className="poster">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/decor/afisha-2026.jpg"
+            alt="Официальная афиша Ярмарки Казанской — 25 июля 2026, Малмыж: программа праздника от «Города мастеров» до ночной дискотеки"
+            width={853}
+            height={1280}
+            loading="lazy"
+          />
+          <figcaption>
+            Официальная афиша праздника ·{' '}
+            <a href="https://vk.com/wall-217788511_5327" rel="noopener noreferrer" target="_blank">
+              источник: РЦКД Малмыж, ВКонтакте
+            </a>
+          </figcaption>
+        </figure>
+
         {events.length > 0 ? (
           <section className="section section--tight">
             {events.map((e) => (
