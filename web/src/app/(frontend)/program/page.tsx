@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
+import { festivalJsonLd, programFaqJsonLd } from '../../../lib/seo'
 import { Hero, Figure } from '../_components/Hero'
 import { ProgramLive, type ProgramEvent } from '../_components/ProgramLive'
 
@@ -28,8 +29,15 @@ export default async function ProgramPage() {
     // CI-сборка против пустой БД / БД недоступна — показываем каркас программы.
   }
 
+  // JSON-LD #051: Festival c subEvent из опубликованной афиши + FAQ (ответы
+  // дублируют видимый контент страницы).
+  const jsonLd = festivalJsonLd(events)
+
   return (
     <main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(programFaqJsonLd) }} />
+
       <Hero image="hero-fair" kicker="25 июля 2026" title="Программа праздника" subtitle="От утреннего шествия до ночного фейерверка" />
 
       <div className="wrap">
@@ -58,8 +66,8 @@ export default async function ProgramPage() {
         ) : (
           <section className="section section--tight">
             <p className="lead">
-              Оргкомитет ещё не опубликовал афишу 2026 года — как только она появится, точное
-              расписание будет здесь. А устроен праздник из года в год так:
+              Расписание по часам временно недоступно — смотрите афишу выше. А устроен праздник из
+              года в год так:
             </p>
             <ul>
               <li><strong>Утро</strong> — открытие, «Город мастеров» и «Этногород» начинают работу, торговые ряды.</li>
@@ -78,6 +86,28 @@ export default async function ProgramPage() {
             </div>
           </section>
         )}
+
+        {/* Видимый дубль FAQ-разметки (#051): Google требует, чтобы ответы FAQPage
+            были на странице, а не только в JSON-LD. */}
+        <section className="section section--tight">
+          <h2>Частые вопросы</h2>
+          <ul>
+            <li>
+              <strong>Когда?</strong> Суббота 25 июля 2026, с 9 утра — до утра воскресенья.
+            </li>
+            <li>
+              <strong>Вход платный?</strong> Нет, все площадки праздника — со свободным входом.
+            </li>
+            <li>
+              <strong>На машине в центр?</strong> Центр города в день праздника перекрыт для
+              автотранспорта — планируйте дорогу и парковку заранее.
+            </li>
+            <li>
+              <strong>Участвовать в карнавале или торговле?</strong> Оргкомитет: карнавал и
+              ремесленники — (83347) 2‑22‑28, торговля — (83347) 2‑28‑83.
+            </li>
+          </ul>
+        </section>
       </div>
     </main>
   )

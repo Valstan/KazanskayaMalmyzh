@@ -1,28 +1,14 @@
 import Link from 'next/link'
 
-import { SITE_URL, FEST_DATE_ISO, FEST_THEME, FEST_THEME_NOTE } from '../../lib/site'
+import { FEST_THEME, FEST_THEME_NOTE } from '../../lib/site'
+import { festivalJsonLd } from '../../lib/seo'
 import { Hero, Figure } from './_components/Hero'
 
 export const revalidate = 3600
 
-// JSON-LD Event (SEO-пакет #051) — данные праздника подтверждены газетой района.
-const eventJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Festival',
-  name: 'Ярмарка Казанская в Малмыже — 2026',
-  startDate: FEST_DATE_ISO,
-  eventStatus: 'https://schema.org/EventScheduled',
-  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-  location: {
-    '@type': 'Place',
-    name: 'г. Малмыж',
-    address: { '@type': 'PostalAddress', addressLocality: 'Малмыж', addressRegion: 'Кировская область', addressCountry: 'RU' },
-  },
-  description:
-    'Главный праздник Малмыжского района: карнавальное шествие по теме года, «Город мастеров», «Этногород», торговые ряды, вечерняя программа и фейерверк.',
-  url: SITE_URL,
-  isAccessibleForFree: true,
-}
+// JSON-LD Event (SEO-пакет #051) — общий билдер lib/seo.ts, на /program тот же
+// Event дополнен subEvent из афиши.
+const eventJsonLd = festivalJsonLd()
 
 export default function HomePage() {
   return (
@@ -87,8 +73,9 @@ export default function HomePage() {
             <li>Вечерняя программа, ночная дискотека и фейерверк.</li>
           </ul>
           <div className="notice">
-            Полная афиша 2026 года появится здесь, как только оргкомитет её опубликует. Хотите
-            участвовать в карнавале или торговле? Телефоны оргкомитета — внизу страницы.
+            Официальная афиша 2026 года опубликована — расписание по часам на{' '}
+            <Link href="/program">странице программы</Link>. Хотите участвовать в карнавале или
+            торговле? Телефоны оргкомитета — внизу страницы.
           </div>
         </section>
       </div>
