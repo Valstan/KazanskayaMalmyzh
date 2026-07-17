@@ -5,6 +5,7 @@ import { Ruslan_Display, Playfair_Display, PT_Serif } from 'next/font/google'
 
 import { SITE_URL, SITE_NAME, FEST_DATE_HUMAN } from '../../lib/site'
 import { Metrika } from './_components/Metrika'
+import { LiveInternet } from './_components/LiveInternet'
 import './globals.css'
 
 // Праздничные шрифты (research-first): орнаментальный дисплей в духе старинных
@@ -80,6 +81,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <p className="site-footer__links">
               <Link href="/istochniki-foto">Источники фотографий</Link>
             </p>
+            <div className="site-footer__counters" aria-label="Счётчики посещаемости">
+              <LiveInternet />
+            </div>
           </div>
         </footer>
         <Metrika />
