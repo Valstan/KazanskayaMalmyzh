@@ -23,10 +23,40 @@ const TYPE_LABEL: Record<string, string> = {
   other: '',
 }
 
+const fmtTime = new Intl.DateTimeFormat('ru-RU', {
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZone: 'Europe/Moscow',
+})
+
+type VenueGroup = { name: string; items: { time: string; title: string }[] }
+
+// Площадки собираются из официальной афиши (опубликованные Events): группируем по
+// location, порядок групп — по времени первого события. Схемы территории от
+// оргкомитета в 2026 году нет, поэтому «карта» = где что происходит и когда.
+function groupByVenue(
+  events: { title: string; startDate: string; endDate?: string | null; venue?: string | null; location?: string | null }[],
+): VenueGroup[] {
+  const groups = new Map<string, VenueGroup>()
+  for (const e of events) {
+    const name = (e.location || e.venue || '').trim()
+    if (!name) continue
+    const start = new Date(e.startDate)
+    if (Number.isNaN(start.getTime())) continue
+    const time = e.endDate
+      ? `${fmtTime.format(start)}–${fmtTime.format(new Date(e.endDate))}`
+      : fmtTime.format(start)
+    if (!groups.has(name)) groups.set(name, { name, items: [] })
+    groups.get(name)!.items.push({ time, title: e.title })
+  }
+  return [...groups.values()]
+}
+
 export default async function MapPage() {
   let planUrl: string | null = null
   let intro: string | null = null
   let points: { label: string; type?: string | null; note?: string | null }[] = []
+  let venues: VenueGroup[] = []
   try {
     const payload = await getPayload({ config })
     const map = await payload.findGlobal({ slug: 'festival-map' })
@@ -35,6 +65,14 @@ export default async function MapPage() {
     if (map.planImage && typeof map.planImage === 'object' && map.planImage.url) {
       planUrl = map.planImage.url
     }
+
+    const res = await payload.find({
+      collection: 'events',
+      where: { _status: { equals: 'published' } },
+      sort: 'startDate',
+      limit: 100,
+    })
+    venues = groupByVenue(res.docs)
   } catch {
     // пустая БД (CI) — покажем маршрут шествия статикой
   }
@@ -51,10 +89,37 @@ export default async function MapPage() {
 
           {planUrl ? (
             <p>
-              <Image src={planUrl} alt="План территории праздника" width={1600} height={1100} style={{ width: '100%', height: 'auto', borderRadius: 8 }} />
+              <Image src={planUrl} alt="План территории праздника" width={1600} height={1100} style={{ width: '100%', height: 'auto', borderRadius: 12 }} />
             </p>
+          ) : null}
+
+          {venues.length > 0 ? (
+            <>
+              <h2>Площадки праздника</h2>
+              <p>
+                Всё происходит в центре города: в городском парке и сквере, на центральных улицах,
+                на стадионе и в РЦКД. Вот что и во сколько идёт на каждой площадке.
+              </p>
+              <div className="venues">
+                {venues.map((v) => (
+                  <div className="venue" key={v.name}>
+                    <h3>{v.name}</h3>
+                    <ul className="venue__list">
+                      {v.items.map((it, i) => (
+                        <li key={i}>
+                          <span className="venue__time">{it.time}</span> {it.title}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </>
           ) : (
-            <p className="lead">Схема площадок 2026 года появится здесь ближе к празднику.</p>
+            <p className="lead">
+              Расписание по площадкам временно недоступно — смотрите{' '}
+              <a href="/program">программу праздника</a>.
+            </p>
           )}
 
           {points.length > 0 ? (
@@ -77,7 +142,7 @@ export default async function MapPage() {
             Традиционный маршрут: от Центра культуры и досуга по улице Чернышевского →
             Комсомольская → Урицкого → Ленина → Карла Маркса → стадион.
           </p>
-          <div className="notice">
+          <div className="notice notice--important">
             В день праздника центр Малмыжа перекрыт для автомобилей. Парковки — на подъездах к
             центру; учитывайте это, если едете из другого города.
           </div>
