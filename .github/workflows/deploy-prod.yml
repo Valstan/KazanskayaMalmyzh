@@ -17,6 +17,7 @@ on:
     paths-ignore:
       - 'docs/**'
       - 'mailbox/**'
+      - 'design/**'
       - '**.md'
       - '.github/**'
       - '.claude/**'
