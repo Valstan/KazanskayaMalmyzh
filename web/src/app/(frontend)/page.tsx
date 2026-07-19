@@ -2,7 +2,8 @@ import Link from 'next/link'
 
 import { FEST_THEME, FEST_THEME_NOTE } from '../../lib/site'
 import { festivalJsonLd } from '../../lib/seo'
-import { Hero, Figure } from './_components/Hero'
+import { HomeHero, Figure } from './_components/Hero'
+import { Countdown } from './_components/Countdown'
 
 export const revalidate = 3600
 
@@ -15,14 +16,26 @@ export default function HomePage() {
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }} />
 
-      <Hero image="oa-02" kicker="Малмыж · Кировская область" title="Ярмарка Казанская" logo>
-        <span className="hero__date">Суббота, 25 июля 2026</span>
+      <HomeHero image="oa-02">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="hero__logo" src="/decor/logo.png" alt="Логотип Ярмарки Казанской" width={104} height={128} />
+        <p className="kicker">Малмыж · Кировская область</p>
+        <h1>Ярмарка Казанская</h1>
+        <p className="hero__meta">Суббота, 25 июля 2026 · с 9 утра до утра воскресенья</p>
         <p className="hero__theme">
-          Тема года — <strong>{FEST_THEME}</strong>
-          <br />
-          <span className="muted" style={{ color: 'rgba(255,255,255,0.8)' }}>{FEST_THEME_NOTE}</span>
+          Тема года — <strong>{FEST_THEME}</strong> · {FEST_THEME_NOTE}
         </p>
-      </Hero>
+        {/* Открытие площадок — 9:00 МСК дня праздника */}
+        <Countdown startIso="2026-07-25T09:00:00+03:00" />
+        <div className="hero__cta">
+          <Link className="btn btn--lg" href="/program">
+            Программа праздника
+          </Link>
+          <Link className="btn btn--lg btn--outline" href="/map">
+            Как добраться
+          </Link>
+        </div>
+      </HomeHero>
 
       <div className="wrap">
         <div className="flourish" aria-hidden />
@@ -89,7 +102,7 @@ export default function HomePage() {
             Символ ярмарки — на рушниках четырёх народов Малмыжской земли. В «Этногороде» их
             подворья, костюмы и кухни встречаются на одной поляне.
           </p>
-          <Link className="photoband__btn" href="/map">
+          <Link className="btn btn--gold" href="/map">
             Карта праздника →
           </Link>
         </div>

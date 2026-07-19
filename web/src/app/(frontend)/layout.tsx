@@ -1,18 +1,19 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import React from 'react'
-import { Ruslan_Display, Playfair_Display, PT_Serif } from 'next/font/google'
+import { Yeseva_One, Nunito_Sans, PT_Sans } from 'next/font/google'
 
 import { SITE_URL, SITE_NAME, FEST_DATE_HUMAN } from '../../lib/site'
 import { Metrika } from './_components/Metrika'
 import { LiveInternet } from './_components/LiveInternet'
+import { SiteNav } from './_components/SiteNav'
 import './globals.css'
 
-// Праздничные шрифты (research-first): орнаментальный дисплей в духе старинных
-// ярмарочных вывесок + нарядный заголовочный серив + читаемый книжный серив тела.
-const display = Ruslan_Display({ subsets: ['cyrillic', 'latin'], weight: '400', variable: '--font-display', display: 'swap' })
-const heading = Playfair_Display({ subsets: ['cyrillic', 'latin'], weight: ['600', '700', '800'], variable: '--font-heading', display: 'swap' })
-const body = PT_Serif({ subsets: ['cyrillic', 'latin'], weight: ['400', '700'], variable: '--font-body', display: 'swap' })
+// Шрифты темы «Ярмарочный лубок» (спека design/inbox/19июля2026): декоративный
+// дисплей только для крупных заголовков + спокойные читаемые гротески интерфейса.
+const display = Yeseva_One({ subsets: ['cyrillic', 'latin'], weight: '400', variable: '--font-display', display: 'swap' })
+const heading = Nunito_Sans({ subsets: ['cyrillic', 'latin'], weight: ['600', '700', '800'], variable: '--font-heading', display: 'swap' })
+const body = PT_Sans({ subsets: ['cyrillic', 'latin'], weight: ['400', '700'], variable: '--font-body', display: 'swap' })
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -32,15 +33,6 @@ export const metadata: Metadata = {
   },
 }
 
-const NAV = [
-  { href: '/', label: 'Главная' },
-  { href: '/program', label: 'Программа' },
-  { href: '/history', label: 'История' },
-  { href: '/years', label: 'Как это было' },
-  { href: '/map', label: 'Карта' },
-  { href: '/gallery', label: 'Галерея' },
-]
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={`${display.variable} ${heading.variable} ${body.variable}`}>
@@ -52,13 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <img className="brand__logo" src="/decor/logo.png" alt="" width={44} height={54} />
               <span className="brand__text">Ярмарка&nbsp;Казанская</span>
             </Link>
-            <nav className="site-nav">
-              {NAV.map((item) => (
-                <Link key={item.href} href={item.href}>
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
+            <SiteNav />
           </div>
           <div className="ornament" aria-hidden />
         </header>

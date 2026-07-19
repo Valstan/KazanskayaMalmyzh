@@ -36,7 +36,12 @@ export default function YearsPage() {
                   {thumb ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img className="year-card__thumb" src={`/years/${thumb.src}.jpg`} alt={thumb.alt} loading="lazy" />
-                  ) : null}
+                  ) : (
+                    /* Год без фото: орнаментальная заставка вместо дыры (спека §4) */
+                    <div className="year-card__ph" aria-hidden>
+                      <span className="year-card__ph-year">{y.year}</span>
+                    </div>
+                  )}
                   <div className="year-card__body">
                     <div className="year-card__head">
                       <span className="year-card__year">{y.year}</span>

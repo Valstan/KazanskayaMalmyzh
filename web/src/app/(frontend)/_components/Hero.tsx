@@ -1,32 +1,45 @@
 import Link from 'next/link'
 import React from 'react'
 
-// Шапка страницы: фото-фон + название поверх (с затемняющим градиентом для
-// читаемости). Фон — статический ассет из /public/decor. Ссылка-кредит ведёт на
-// страницу источников фото (атрибуция CC — одним местом).
+// Шапки страниц (лубок-редизайн, спека design/inbox/19июля2026).
+// HomeHero — первый экран главной: «сначала информация, потом эмоция» —
+// на десктопе фото под светлым градиентом слева, на мобайле фото-полоса
+// сверху и светлая панель под ней. HeroPage — компактная фото-плашка
+// внутренних страниц (замечание ChatGPT: не повторять огромный hero везде).
+
+export function HomeHero({ image, children }: { image: string; children?: React.ReactNode }) {
+  const bg = `url(/decor/${image}.jpg)`
+  return (
+    <section className="hero hero--home" style={{ backgroundImage: bg }}>
+      {/* Мобайл: та же фотография отдельной полосой над светлой панелью */}
+      <div className="hero__photo-mobile" style={{ backgroundImage: bg }} aria-hidden />
+      <div className="hero__inner">
+        <div className="hero__content">{children}</div>
+      </div>
+      <Link href="/istochniki-foto" className="hero__credit" aria-label="Источник фотографии">
+        фото · источники ↗
+      </Link>
+    </section>
+  )
+}
+
 export function Hero({
   image,
   kicker,
   title,
   subtitle,
-  logo,
   children,
 }: {
   image: string
   kicker?: string
   title: string
   subtitle?: string
-  logo?: boolean
   children?: React.ReactNode
 }) {
   return (
-    <section className="hero" style={{ backgroundImage: `url(/decor/${image}.jpg)` }}>
+    <section className="hero hero--page" style={{ backgroundImage: `url(/decor/${image}.jpg)` }}>
       <div className="hero__inner">
-        {logo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="hero__logo" src="/decor/logo.png" alt="Логотип Ярмарки Казанской" width={150} height={184} />
-        ) : null}
-        {kicker ? <p className="kicker" style={{ color: 'var(--fair-gold-bright)' }}>{kicker}</p> : null}
+        {kicker ? <p className="kicker">{kicker}</p> : null}
         <h1>{title}</h1>
         {subtitle ? <p className="hero__subtitle">{subtitle}</p> : null}
         {children}
