@@ -28,6 +28,69 @@
   filter: drop-shadow(0 3px 2px rgba(43, 29, 22, 0.16));
 }
 
+.fair-guide {
+  margin: 0;
+  pointer-events: none;
+}
+
+.fair-guide img,
+.guide-card__figure,
+.section-guide img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  filter: drop-shadow(0 12px 14px rgba(76, 36, 20, 0.2));
+}
+
+.fair-guide--hero {
+  position: absolute;
+  right: clamp(-20px, 1.5vw, 24px);
+  bottom: -8px;
+  z-index: 2;
+  width: clamp(285px, 30vw, 430px);
+  animation: guide-bob 4.8s ease-in-out infinite;
+}
+
+.fair-guide--hero figcaption {
+  position: absolute;
+  top: 22%;
+  left: -42%;
+  width: 205px;
+  padding: 0.75rem 0.9rem;
+  border: 2px solid var(--c-primary);
+  border-radius: 18px 18px 4px;
+  background: rgba(255, 249, 237, 0.96);
+  color: var(--c-primary-dark);
+  font-family: var(--font-heading-f);
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: center;
+  box-shadow: var(--shadow-card-hover);
+}
+
+.fair-guide--hero figcaption::after {
+  content: '';
+  position: absolute;
+  right: -17px;
+  bottom: -2px;
+  width: 26px;
+  height: 22px;
+  border-bottom: 2px solid var(--c-primary);
+  background: linear-gradient(135deg, transparent 49%, rgba(255, 249, 237, 0.96) 50%);
+  transform: rotate(13deg);
+}
+
+@keyframes guide-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-0.4deg);
+  }
+  50% {
+    transform: translateY(-7px) rotate(0.6deg);
+  }
+}
+
 .home-celebration {
   position: relative;
   margin-top: 1.5rem;
@@ -77,7 +140,7 @@
 
 .page--home .card {
   position: relative;
-  min-height: 156px;
+  min-height: 218px;
   border-top: 6px solid var(--card-accent, var(--c-accent));
   background:
     radial-gradient(circle at 92% 12%, color-mix(in srgb, var(--card-accent, var(--c-accent)) 12%, transparent) 0 42px, transparent 43px),
@@ -117,6 +180,135 @@
   color: var(--card-accent, var(--c-accent));
   font-size: 1.5rem;
   opacity: 0.7;
+}
+
+.guide-card {
+  overflow: hidden;
+  padding: 1.2rem 1.3rem;
+  isolation: isolate;
+}
+
+.guide-card::after {
+  display: none;
+}
+
+.guide-card__copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 62%;
+  min-height: 174px;
+}
+
+.guide-card__copy p {
+  color: var(--c-text);
+}
+
+.guide-card__aside {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  margin-top: auto;
+  padding: 0.25rem 0.7rem;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--card-accent) 12%, var(--c-surface-alt));
+  color: color-mix(in srgb, var(--card-accent) 76%, var(--c-text));
+  font-family: var(--font-heading-f);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.guide-card__figure {
+  position: absolute;
+  right: -10px;
+  bottom: -18px;
+  z-index: 1;
+  width: 170px;
+  transition: transform var(--t-normal) var(--ease);
+}
+
+.guide-card:hover .guide-card__figure {
+  transform: translateY(-6px) rotate(1.5deg);
+}
+
+.guide-card--program .guide-card__figure {
+  right: -12px;
+  width: 162px;
+}
+
+.guide-card--history .guide-card__copy {
+  max-width: 54%;
+}
+
+.guide-card--history .guide-card__figure {
+  right: -26px;
+  width: 215px;
+}
+
+.guide-card--years .guide-card__figure {
+  right: -17px;
+  width: 185px;
+}
+
+.guide-card--map .guide-card__copy {
+  max-width: 55%;
+}
+
+.guide-card--map .guide-card__figure {
+  right: -21px;
+  width: 196px;
+}
+
+.section-guide {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(220px, 340px) minmax(0, 1fr);
+  align-items: center;
+  min-height: 195px;
+  margin: 1rem 0 1.6rem;
+  padding: 1rem 1.4rem 1rem 0;
+  overflow: hidden;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(circle at 8% 20%, rgba(255, 179, 0, 0.2), transparent 34%),
+    linear-gradient(120deg, #fff1d6, #fffaf0);
+  box-shadow: var(--shadow-card);
+}
+
+.section-guide img {
+  align-self: end;
+  width: 340px;
+  margin: -28px 0 -30px -8px;
+}
+
+.section-guide__speech {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: 1.1rem 1.35rem;
+  border: 2px solid var(--c-primary);
+  border-radius: 22px 22px 22px 5px;
+  background: var(--c-surface);
+  color: var(--c-primary-dark);
+  font-family: var(--font-display-f);
+  font-size: clamp(1.15rem, 2.2vw, 1.55rem);
+  line-height: 1.35;
+  box-shadow: var(--shadow-card);
+}
+
+.section-guide__speech::before {
+  content: '';
+  position: absolute;
+  left: -22px;
+  bottom: 16px;
+  width: 28px;
+  height: 24px;
+  border-bottom: 2px solid var(--c-primary);
+  background: linear-gradient(45deg, transparent 48%, var(--c-surface) 49%);
+  transform: rotate(-10deg);
 }
 
 /* ---------- Купеческая бумага внутренних страниц ---------- */
@@ -312,6 +504,18 @@
     background-size: 32px 22px;
   }
 
+  .fair-guide--hero {
+    top: 90px;
+    right: 2px;
+    bottom: auto;
+    width: 112px;
+    animation: none;
+  }
+
+  .fair-guide--hero figcaption {
+    display: none;
+  }
+
   .home-celebration {
     margin-top: 0.8rem;
     padding: 1rem 1rem 160px;
@@ -331,7 +535,64 @@
 
   .page--home .card:nth-child(n) {
     grid-column: auto;
-    min-height: 128px;
+    min-height: 200px;
+  }
+
+  .guide-card {
+    padding: 1rem;
+  }
+
+  .guide-card__copy,
+  .guide-card--history .guide-card__copy,
+  .guide-card--map .guide-card__copy {
+    max-width: 58%;
+    min-height: 164px;
+  }
+
+  .guide-card__figure,
+  .guide-card--program .guide-card__figure {
+    right: -20px;
+    width: 150px;
+  }
+
+  .guide-card--history .guide-card__figure {
+    right: -32px;
+    width: 176px;
+  }
+
+  .guide-card--years .guide-card__figure {
+    right: -25px;
+    width: 155px;
+  }
+
+  .guide-card--map .guide-card__figure {
+    right: -30px;
+    width: 172px;
+  }
+
+  .section-guide {
+    display: block;
+    min-height: 335px;
+    padding: 0.9rem;
+  }
+
+  .section-guide img {
+    position: absolute;
+    right: -40px;
+    bottom: -10px;
+    width: 285px;
+    margin: 0;
+    opacity: 0.96;
+  }
+
+  .section-guide__speech {
+    max-width: 70%;
+    padding: 0.85rem 1rem;
+    font-size: 1.08rem;
+  }
+
+  .section-guide__speech::before {
+    display: none;
   }
 
   .page-shell {
