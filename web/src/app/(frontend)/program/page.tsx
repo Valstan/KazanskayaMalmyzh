@@ -34,13 +34,19 @@ export default async function ProgramPage() {
   const jsonLd = festivalJsonLd(events)
 
   return (
-    <main>
+    <main className="page page--inner page--program">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(programFaqJsonLd) }} />
 
-      <Hero image="hero-fair" kicker="25 июля 2026" title="Программа праздника" subtitle="От утреннего шествия до ночного фейерверка" />
+      <Hero
+        image="hero-fair"
+        kicker="25 июля 2026"
+        title="Программа праздника"
+        subtitle="От утреннего шествия до ночного фейерверка"
+        decor="program"
+      />
 
-      <div className="wrap">
+      <div className="wrap page-shell">
         <div className="flourish" aria-hidden />
 
         {events.length > 0 ? (
@@ -48,14 +54,24 @@ export default async function ProgramPage() {
         ) : (
           <section className="section section--tight">
             <p className="lead">
-              Расписание по часам временно недоступно — смотрите официальную афишу ниже. А устроен
-              праздник из года в год так:
+              Расписание по часам временно недоступно — смотрите официальную афишу ниже. А устроен праздник из года в
+              год так:
             </p>
             <ul>
-              <li><strong>Утро</strong> — открытие, «Город мастеров» и «Этногород» начинают работу, торговые ряды.</li>
-              <li><strong>День</strong> — карнавальное шествие по теме года «Мы Вятские — люди хватские!» через центр города к стадиону, представления на стадионе.</li>
-              <li><strong>Вторая половина дня</strong> — конкурсы ремёсел и национальных подворий, «Куштымаш», концерты.</li>
-              <li><strong>Вечер и ночь</strong> — вечерняя программа, дискотека и фейерверк; праздник длится до утра воскресенья.</li>
+              <li>
+                <strong>Утро</strong> — открытие, «Город мастеров» и «Этногород» начинают работу, торговые ряды.
+              </li>
+              <li>
+                <strong>День</strong> — карнавальное шествие по теме года «Мы Вятские — люди хватские!» через центр
+                города к стадиону, представления на стадионе.
+              </li>
+              <li>
+                <strong>Вторая половина дня</strong> — конкурсы ремёсел и национальных подворий, «Куштымаш», концерты.
+              </li>
+              <li>
+                <strong>Вечер и ночь</strong> — вечерняя программа, дискотека и фейерверк; праздник длится до утра
+                воскресенья.
+              </li>
             </ul>
             <Figure
               image="fireworks"
@@ -63,8 +79,8 @@ export default async function ProgramPage() {
               caption="Финал праздника — фейерверк над Малмыжем"
             />
             <div className="notice">
-              Праздник начинается в 9 утра субботы. Центр города в этот день перекрыт для
-              автотранспорта — планируйте дорогу заранее.
+              Праздник начинается в 9 утра субботы. Центр города в этот день перекрыт для автотранспорта — планируйте
+              дорогу заранее.
             </div>
           </section>
         )}
@@ -107,8 +123,7 @@ export default async function ProgramPage() {
             <details className="faq__item">
               <summary>Можно ли на машине в центр?</summary>
               <p className="faq__answer">
-                Центр города в день праздника перекрыт для автотранспорта — планируйте дорогу и
-                парковку заранее.
+                Центр города в день праздника перекрыт для автотранспорта — планируйте дорогу и парковку заранее.
               </p>
             </details>
             <details className="faq__item">

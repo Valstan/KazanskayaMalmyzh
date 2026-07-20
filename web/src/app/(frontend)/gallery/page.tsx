@@ -13,7 +13,12 @@ export const metadata: Metadata = {
 }
 
 export default async function GalleryPage() {
-  let albums: { id: number | string; title: string; description?: string | null; date?: string | null }[] = []
+  let albums: {
+    id: number | string
+    title: string
+    description?: string | null
+    date?: string | null
+  }[] = []
   try {
     const payload = await getPayload({ config })
     const res = await payload.find({
@@ -28,17 +33,23 @@ export default async function GalleryPage() {
   }
 
   return (
-    <main>
-      <Hero image="carousel" kicker="Фото и видео" title="Галерея" subtitle="Праздник в лицах и красках" />
+    <main className="page page--inner page--gallery">
+      <Hero
+        image="carousel"
+        kicker="Фото и видео"
+        title="Галерея"
+        subtitle="Праздник в лицах и красках"
+        decor="gallery"
+      />
 
-      <div className="wrap">
+      <div className="wrap page-shell">
         <div className="flourish" aria-hidden />
 
         <section className="section section--tight">
           <h2>Ярмарка Казанская — 2024</h2>
           <p>
-            Костюмированное шествие, открытие на главной сцене, награждения и гости праздника —
-            несколько кадров с ярмарки 2024 года.
+            Костюмированное шествие, открытие на главной сцене, награждения и гости праздника — несколько кадров с
+            ярмарки 2024 года.
           </p>
           <div className="photo-grid">
             {GALLERY_2024.map((p) => (
@@ -67,8 +78,8 @@ export default async function GalleryPage() {
         ) : (
           <section className="section section--tight">
             <div className="notice">
-              У вас есть фотографии с ярмарок прошлых лет? Мы собираем архив — напишите оргкомитету
-              (телефоны внизу страницы).
+              У вас есть фотографии с ярмарок прошлых лет? Мы собираем архив — напишите оргкомитету (телефоны внизу
+              страницы).
             </div>
           </section>
         )}

@@ -16,17 +16,17 @@ export const metadata: Metadata = {
 
 export default function CreditsPage() {
   return (
-    <main>
-      <Hero image="malmyzh-lavka" kicker="Атрибуция" title="Источники фотографий" />
+    <main className="page page--inner page--sources">
+      <Hero image="malmyzh-lavka" kicker="Атрибуция" title="Источники фотографий" decor="merchant" />
 
-      <div className="wrap">
+      <div className="wrap page-shell">
         <div className="flourish" aria-hidden />
 
         <section className="section section--tight">
           <p className="lead">
-            Оформление сайта использует свободные фотографии с Викисклада (Wikimedia Commons).
-            Ниже — авторы, лицензии и ссылки на исходные файлы. Уменьшенные и сжатые версии
-            распространяются под теми же лицензиями, что и оригиналы.
+            Оформление сайта использует свободные фотографии с Викисклада (Wikimedia Commons). Ниже — авторы, лицензии и
+            ссылки на исходные файлы. Уменьшенные и сжатые версии распространяются под теми же лицензиями, что и
+            оригиналы.
           </p>
 
           <ul className="credits-list">
@@ -54,14 +54,13 @@ export default function CreditsPage() {
 
           <h2>Фотографии праздника</h2>
           <p>
-            Снимки самого праздника (галерея, часть шапок страниц) — из фотоархива оргкомитета
-            Ярмарки Казанской: <strong>{GALLERY_ATTRIBUTION}</strong>. Логотип праздника предоставлен
-            организаторами.
+            Снимки самого праздника (галерея, часть шапок страниц) — из фотоархива оргкомитета Ярмарки Казанской:{' '}
+            <strong>{GALLERY_ATTRIBUTION}</strong>. Логотип праздника предоставлен организаторами.
           </p>
 
           <div className="notice">
-            Если вы автор снимка и хотите изменить подпись или убрать фото — напишите оргкомитету,
-            мы оперативно поправим.
+            Если вы автор снимка и хотите изменить подпись или убрать фото — напишите оргкомитету, мы оперативно
+            поправим.
           </div>
         </section>
       </div>

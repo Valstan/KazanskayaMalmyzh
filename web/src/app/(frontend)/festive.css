@@ -1,0 +1,352 @@
+/* ==========================================================================
+   Гибрид трёх дизайн-направлений:
+   яркий «Ярмарочный лубок» на главной + спокойная «Купеческая классика»
+   на внутренних страницах + чистая геометрия «Современной этники».
+   ========================================================================== */
+
+.page {
+  position: relative;
+  overflow: clip;
+}
+
+/* ---------- Флажки и праздничная главная ---------- */
+
+.hero--home {
+  border-bottom: 10px solid var(--c-accent);
+}
+
+.hero--home::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 1;
+  height: 34px;
+  pointer-events: none;
+  background:
+    linear-gradient(135deg, var(--c-primary) 50%, transparent 51%) 0 0 / 42px 30px repeat-x,
+    linear-gradient(225deg, var(--c-accent) 50%, transparent 51%) 21px 0 / 42px 30px repeat-x;
+  filter: drop-shadow(0 3px 2px rgba(43, 29, 22, 0.16));
+}
+
+.home-celebration {
+  position: relative;
+  margin-top: 1.5rem;
+  padding: 1.2rem clamp(1rem, 3vw, 2rem) clamp(210px, 24vw, 320px);
+  border: 1px solid rgba(231, 194, 122, 0.85);
+  border-radius: clamp(18px, 3vw, 30px);
+  background:
+    linear-gradient(180deg, rgba(255, 247, 230, 0.93) 0%, rgba(255, 247, 230, 0.9) 60%, rgba(255, 247, 230, 0.1) 100%),
+    url('/decor/folk-floral-frame-v2.webp') bottom center / 100% auto no-repeat,
+    var(--c-bg);
+  box-shadow: 0 18px 50px rgba(124, 27, 45, 0.1);
+}
+
+.home-celebration::before,
+.home-celebration::after {
+  content: '✦';
+  position: absolute;
+  top: 18px;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 3px solid var(--c-accent);
+  border-radius: 50%;
+  background: var(--c-primary);
+  color: var(--c-accent);
+  font-size: 1.1rem;
+  box-shadow: 0 0 0 5px rgba(211, 47, 47, 0.08);
+}
+
+.home-celebration::before {
+  left: 18px;
+}
+
+.home-celebration::after {
+  right: 18px;
+}
+
+.page--home h2 {
+  font-family: var(--font-display-f);
+  font-weight: 400;
+}
+
+.page--home .cards {
+  grid-template-columns: repeat(12, 1fr);
+}
+
+.page--home .card {
+  position: relative;
+  min-height: 156px;
+  border-top: 6px solid var(--card-accent, var(--c-accent));
+  background:
+    radial-gradient(circle at 92% 12%, color-mix(in srgb, var(--card-accent, var(--c-accent)) 12%, transparent) 0 42px, transparent 43px),
+    var(--c-surface);
+}
+
+.page--home .card:nth-child(1) {
+  grid-column: span 6;
+  --card-accent: var(--c-primary);
+}
+
+.page--home .card:nth-child(2) {
+  grid-column: span 6;
+  --card-accent: #8b5a2b;
+}
+
+.page--home .card:nth-child(3) {
+  grid-column: span 7;
+  --card-accent: var(--c-blue);
+}
+
+.page--home .card:nth-child(4) {
+  grid-column: span 5;
+  --card-accent: var(--c-green);
+}
+
+.page--home .card h3 {
+  color: var(--card-accent, var(--c-primary));
+  font-size: 1.35rem;
+}
+
+.page--home .card::after {
+  content: '❋';
+  position: absolute;
+  top: 9px;
+  right: 16px;
+  color: var(--card-accent, var(--c-accent));
+  font-size: 1.5rem;
+  opacity: 0.7;
+}
+
+/* ---------- Купеческая бумага внутренних страниц ---------- */
+
+.page-shell {
+  position: relative;
+  isolation: isolate;
+  margin-top: 1.4rem;
+  padding: 1.2rem clamp(1rem, 3vw, 2.2rem) 2.5rem;
+  border: 1px solid rgba(201, 151, 50, 0.42);
+  border-radius: var(--r-lg);
+  background: rgba(255, 249, 237, 0.9);
+  box-shadow: 0 16px 45px rgba(59, 38, 29, 0.08);
+}
+
+.page-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: url('/decor/merchant-frame-v2.webp') top center / max(1280px, 100%) auto no-repeat;
+  opacity: 0.34;
+  pointer-events: none;
+}
+
+.page-shell::after {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  z-index: -1;
+  border: 1px solid rgba(159, 29, 36, 0.14);
+  border-radius: calc(var(--r-lg) - 6px);
+  pointer-events: none;
+}
+
+.page-shell > * {
+  position: relative;
+}
+
+/* ---------- Тематические шапки разделов ---------- */
+
+.hero--page {
+  border-bottom: 6px solid var(--page-accent, var(--c-accent));
+}
+
+.hero__folk-border {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 2;
+  height: 10px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--page-accent, var(--c-accent)) 0 18px,
+    var(--page-deep, var(--c-primary-dark)) 18px 36px,
+    #fff1d6 36px 45px
+  );
+  box-shadow: 0 -2px 0 rgba(255, 247, 230, 0.65);
+}
+
+.hero--merchant {
+  --page-accent: #c99732;
+  --page-deep: #7c1b2d;
+}
+
+.hero--merchant::before {
+  background: linear-gradient(90deg, rgba(45, 27, 18, 0.82), rgba(124, 27, 45, 0.66));
+}
+
+.hero--program {
+  --page-accent: #ffb300;
+  --page-deep: #c62828;
+}
+
+.hero--program::before {
+  background: linear-gradient(110deg, rgba(159, 29, 36, 0.88), rgba(211, 47, 47, 0.54), rgba(43, 29, 22, 0.56));
+}
+
+.hero--map {
+  --page-accent: #e6b94d;
+  --page-deep: #2e6a3a;
+}
+
+.hero--map::before {
+  background: linear-gradient(110deg, rgba(35, 82, 48, 0.84), rgba(124, 27, 45, 0.58));
+}
+
+.hero--gallery {
+  --page-accent: #ffb300;
+  --page-deep: #1565c0;
+}
+
+.hero--gallery::before {
+  background: linear-gradient(110deg, rgba(21, 101, 192, 0.72), rgba(124, 27, 45, 0.7));
+}
+
+.hero--chronicle {
+  --page-accent: #d6aa55;
+  --page-deep: #67351f;
+}
+
+.hero--chronicle::before {
+  background: linear-gradient(110deg, rgba(59, 38, 29, 0.82), rgba(124, 27, 45, 0.65));
+}
+
+.page--history {
+  --section-mark: '❦';
+}
+
+.page--program {
+  --section-mark: '♫';
+}
+
+.page--map {
+  --section-mark: '⌖';
+}
+
+.page--gallery {
+  --section-mark: '✿';
+}
+
+.page--years {
+  --section-mark: '⌛';
+}
+
+.page--sources {
+  --section-mark: '✦';
+}
+
+.page--inner h2::before {
+  content: var(--section-mark, '❦') ' ';
+}
+
+/* ---------- Ритм контентных карточек ---------- */
+
+.page--program .event:nth-child(4n + 1) {
+  border-left-color: var(--c-blue);
+}
+
+.page--program .event:nth-child(4n + 2) {
+  border-left-color: var(--c-green);
+}
+
+.page--program .event:nth-child(4n + 3) {
+  border-left-color: var(--c-accent);
+}
+
+.page--map .venue:nth-child(3n + 1) {
+  border-top-color: #2e7d32;
+}
+
+.page--map .venue:nth-child(3n + 2) {
+  border-top-color: #c99732;
+}
+
+.page--map .venue:nth-child(3n) {
+  border-top-color: #7c1b2d;
+}
+
+.page--gallery .photo-grid__item:nth-child(3n + 1) {
+  transform: rotate(-0.7deg);
+}
+
+.page--gallery .photo-grid__item:nth-child(3n + 2) {
+  transform: translateY(8px);
+}
+
+.page--gallery .photo-grid__item:nth-child(3n) {
+  transform: rotate(0.7deg);
+}
+
+.page--gallery .photo-grid__item:hover {
+  z-index: 2;
+  transform: translateY(-4px) rotate(0);
+}
+
+.page--years .year-card:nth-child(3n + 1) {
+  border-top: 4px solid #7c1b2d;
+}
+
+.page--years .year-card:nth-child(3n + 2) {
+  border-top: 4px solid #c99732;
+}
+
+.page--years .year-card:nth-child(3n) {
+  border-top: 4px solid #64724c;
+}
+
+@media (max-width: 760px) {
+  .hero--home::after {
+    height: 24px;
+    background-position: 0 0, 16px 0;
+    background-size: 32px 22px;
+  }
+
+  .home-celebration {
+    margin-top: 0.8rem;
+    padding: 1rem 1rem 160px;
+    border-inline: none;
+    border-radius: 0;
+    background-size: auto, 820px auto, auto;
+  }
+
+  .home-celebration::before,
+  .home-celebration::after {
+    display: none;
+  }
+
+  .page--home .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .page--home .card:nth-child(n) {
+    grid-column: auto;
+    min-height: 128px;
+  }
+
+  .page-shell {
+    margin-top: 0.8rem;
+    padding: 0.9rem 1rem 1.6rem;
+    border-inline: none;
+    border-radius: 0;
+  }
+
+  .page-shell::before {
+    background-size: 980px auto;
+    opacity: 0.2;
+  }
+
+  .page--gallery .photo-grid__item:nth-child(n) {
+    transform: none;
+  }
+}

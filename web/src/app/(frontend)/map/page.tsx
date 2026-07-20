@@ -35,7 +35,13 @@ type VenueGroup = { name: string; items: { time: string; title: string }[] }
 // location, порядок групп — по времени первого события. Схемы территории от
 // оргкомитета в 2026 году нет, поэтому «карта» = где что происходит и когда.
 function groupByVenue(
-  events: { title: string; startDate: string; endDate?: string | null; venue?: string | null; location?: string | null }[],
+  events: {
+    title: string
+    startDate: string
+    endDate?: string | null
+    venue?: string | null
+    location?: string | null
+  }[],
 ): VenueGroup[] {
   const groups = new Map<string, VenueGroup>()
   for (const e of events) {
@@ -43,9 +49,7 @@ function groupByVenue(
     if (!name) continue
     const start = new Date(e.startDate)
     if (Number.isNaN(start.getTime())) continue
-    const time = e.endDate
-      ? `${fmtTime.format(start)}–${fmtTime.format(new Date(e.endDate))}`
-      : fmtTime.format(start)
+    const time = e.endDate ? `${fmtTime.format(start)}–${fmtTime.format(new Date(e.endDate))}` : fmtTime.format(start)
     if (!groups.has(name)) groups.set(name, { name, items: [] })
     groups.get(name)!.items.push({ time, title: e.title })
   }
@@ -61,7 +65,11 @@ export default async function MapPage() {
     const payload = await getPayload({ config })
     const map = await payload.findGlobal({ slug: 'festival-map' })
     intro = map.intro ?? null
-    points = (map.points ?? []).map((p) => ({ label: p.label, type: p.type, note: p.note }))
+    points = (map.points ?? []).map((p) => ({
+      label: p.label,
+      type: p.type,
+      note: p.note,
+    }))
     if (map.planImage && typeof map.planImage === 'object' && map.planImage.url) {
       planUrl = map.planImage.url
     }
@@ -78,10 +86,16 @@ export default async function MapPage() {
   }
 
   return (
-    <main>
-      <Hero image="malmyzh-street" kicker="Где что" title="Карта праздника" subtitle="Площадки, сцены и маршрут шествия" />
+    <main className="page page--inner page--map">
+      <Hero
+        image="malmyzh-street"
+        kicker="Где что"
+        title="Карта праздника"
+        subtitle="Площадки, сцены и маршрут шествия"
+        decor="map"
+      />
 
-      <div className="wrap">
+      <div className="wrap page-shell">
         <div className="flourish" aria-hidden />
 
         <section className="section section--tight">
@@ -89,7 +103,13 @@ export default async function MapPage() {
 
           {planUrl ? (
             <p>
-              <Image src={planUrl} alt="План территории праздника" width={1600} height={1100} style={{ width: '100%', height: 'auto', borderRadius: 12 }} />
+              <Image
+                src={planUrl}
+                alt="План территории праздника"
+                width={1600}
+                height={1100}
+                style={{ width: '100%', height: 'auto', borderRadius: 12 }}
+              />
             </p>
           ) : null}
 
@@ -97,8 +117,8 @@ export default async function MapPage() {
             <>
               <h2>Площадки праздника</h2>
               <p>
-                Всё происходит в центре города: в городском парке и сквере, на центральных улицах,
-                на стадионе и в РЦКД. Вот что и во сколько идёт на каждой площадке.
+                Всё происходит в центре города: в городском парке и сквере, на центральных улицах, на стадионе и в РЦКД.
+                Вот что и во сколько идёт на каждой площадке.
               </p>
               <div className="venues">
                 {venues.map((v) => (
@@ -117,8 +137,7 @@ export default async function MapPage() {
             </>
           ) : (
             <p className="lead">
-              Расписание по площадкам временно недоступно — смотрите{' '}
-              <a href="/program">программу праздника</a>.
+              Расписание по площадкам временно недоступно — смотрите <a href="/program">программу праздника</a>.
             </p>
           )}
 
@@ -139,12 +158,12 @@ export default async function MapPage() {
 
           <h2>Маршрут карнавального шествия</h2>
           <p>
-            Традиционный маршрут: от Центра культуры и досуга по улице Чернышевского →
-            Комсомольская → Урицкого → Ленина → Карла Маркса → стадион.
+            Традиционный маршрут: от Центра культуры и досуга по улице Чернышевского → Комсомольская → Урицкого → Ленина
+            → Карла Маркса → стадион.
           </p>
           <div className="notice notice--important">
-            В день праздника центр Малмыжа перекрыт для автомобилей. Парковки — на подъездах к
-            центру; учитывайте это, если едете из другого города.
+            В день праздника центр Малмыжа перекрыт для автомобилей. Парковки — на подъездах к центру; учитывайте это,
+            если едете из другого города.
           </div>
         </section>
       </div>

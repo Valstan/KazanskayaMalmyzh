@@ -32,21 +32,20 @@ export default async function YearPage({ params }: { params: Promise<{ year: str
   const next = [...YEARS.slice(0, idx)].reverse().find((y) => withPage.has(y.year)) ?? null
 
   return (
-    <main>
+    <main className="page page--inner page--years page--year">
       <Hero
         image={info.heroImage ?? 'oa-01'}
         kicker={info.date ? `${info.date} ${info.year}` : String(info.year)}
         title={info.theme}
         subtitle={info.note}
+        decor="chronicle"
       />
 
-      <div className="wrap">
+      <div className="wrap page-shell">
         <div className="flourish" aria-hidden />
 
         <section className="section section--tight">
-          {info.weak ? (
-            <div className="notice">Сведения об этом годе — по неподтверждённым данным.</div>
-          ) : null}
+          {info.weak ? <div className="notice">Сведения об этом годе — по неподтверждённым данным.</div> : null}
 
           {info.paragraphs.map((p, i) => (
             <p key={i} className={i === 0 ? 'lead' : undefined}>

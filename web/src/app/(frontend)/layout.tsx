@@ -8,6 +8,7 @@ import { Metrika } from './_components/Metrika'
 import { LiveInternet } from './_components/LiveInternet'
 import { SiteNav } from './_components/SiteNav'
 import './globals.css'
+import './festive.css'
 
 // Шрифты темы «Ярмарочный лубок» (спека design/inbox/19июля2026): декоративный
 // дисплей только для крупных заголовков + спокойные читаемые гротески интерфейса.

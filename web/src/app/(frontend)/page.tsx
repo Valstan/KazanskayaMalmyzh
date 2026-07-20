@@ -13,7 +13,7 @@ const eventJsonLd = festivalJsonLd()
 
 export default function HomePage() {
   return (
-    <main>
+    <main className="page page--home">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }} />
 
       <HomeHero image="oa-02">
@@ -37,15 +37,15 @@ export default function HomePage() {
         </div>
       </HomeHero>
 
-      <div className="wrap">
+      <div className="wrap home-celebration">
         <div className="flourish" aria-hidden />
 
         <section className="section section--tight">
           <h2>Заходи, честной народ, к нам на ярмаНку!</h2>
           <p className="lead">
-            Главный праздник Малмыжского района и день города Малмыжа: с девяти утра субботы до
-            утра воскресенья. Карнавальное шествие по теме года, ремёсла, подворья и кухни четырёх
-            народов, торговые ряды, вечерняя программа и фейерверк.
+            Главный праздник Малмыжского района и день города Малмыжа: с девяти утра субботы до утра воскресенья.
+            Карнавальное шествие по теме года, ремёсла, подворья и кухни четырёх народов, торговые ряды, вечерняя
+            программа и фейерверк.
           </p>
           <div className="cards">
             <Link className="card" href="/program">
@@ -87,8 +87,8 @@ export default function HomePage() {
           </ul>
           <div className="notice">
             Официальная афиша 2026 года опубликована — расписание по часам на{' '}
-            <Link href="/program">странице программы</Link>. Хотите участвовать в карнавале или
-            торговле? Телефоны оргкомитета — внизу страницы.
+            <Link href="/program">странице программы</Link>. Хотите участвовать в карнавале или торговле? Телефоны
+            оргкомитета — внизу страницы.
           </div>
         </section>
       </div>
@@ -99,8 +99,8 @@ export default function HomePage() {
           <p className="kicker">Четыре народа — один праздник</p>
           <h2>Русские · Татары · Марийцы · Удмурты</h2>
           <p>
-            Символ ярмарки — на рушниках четырёх народов Малмыжской земли. В «Этногороде» их
-            подворья, костюмы и кухни встречаются на одной поляне.
+            Символ ярмарки — на рушниках четырёх народов Малмыжской земли. В «Этногороде» их подворья, костюмы и кухни
+            встречаются на одной поляне.
           </p>
           <Link className="btn btn--gold" href="/map">
             Карта праздника →
