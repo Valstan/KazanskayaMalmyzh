@@ -28,16 +28,19 @@ export function Hero({
   kicker,
   title,
   subtitle,
+  decor = 'merchant',
   children,
 }: {
   image: string
   kicker?: string
   title: string
   subtitle?: string
+  decor?: 'merchant' | 'program' | 'map' | 'gallery' | 'chronicle'
   children?: React.ReactNode
 }) {
   return (
-    <section className="hero hero--page" style={{ backgroundImage: `url(/decor/${image}.jpg)` }}>
+    <section className={`hero hero--page hero--${decor}`} style={{ backgroundImage: `url(/decor/${image}.jpg)` }}>
+      <div className="hero__folk-border" aria-hidden />
       <div className="hero__inner">
         {kicker ? <p className="kicker">{kicker}</p> : null}
         <h1>{title}</h1>
