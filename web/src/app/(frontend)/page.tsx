@@ -35,6 +35,11 @@ export default function HomePage() {
             Как добраться
           </Link>
         </div>
+        <figure className="fair-guide fair-guide--hero">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/decor/guides/welcome.webp" alt="Скоморох-гид приглашает гостей на ярмарку" />
+          <figcaption>Ай да на ярмарку! Всё покажу — ничего не пропустите.</figcaption>
+        </figure>
       </HomeHero>
 
       <div className="wrap home-celebration">
@@ -48,21 +53,41 @@ export default function HomePage() {
             программа и фейерверк.
           </p>
           <div className="cards">
-            <Link className="card" href="/program">
-              <h3>Программа</h3>
-              <p>Шествие, «Город мастеров», «Этногород», сцена и фейерверк — по часам.</p>
+            <Link className="card guide-card guide-card--program" href="/program">
+              <div className="guide-card__copy">
+                <h3>Программа</h3>
+                <p>Шествие, «Город мастеров», «Этногород», сцена и фейерверк — по часам.</p>
+                <span className="guide-card__aside">По часам — сюда!</span>
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="guide-card__figure" src="/decor/guides/program.webp" alt="" aria-hidden />
             </Link>
-            <Link className="card" href="/history">
-              <h3>История</h3>
-              <p>Малмыж с 1584 года, Сибирский тракт, купеческие лавки и престольная традиция.</p>
+            <Link className="card guide-card guide-card--history" href="/history">
+              <div className="guide-card__copy">
+                <h3>История</h3>
+                <p>Малмыж с 1584 года, Сибирский тракт, купеческие лавки и престольная традиция.</p>
+                <span className="guide-card__aside">Царевна откроет летопись</span>
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="guide-card__figure" src="/decor/guides/history.webp" alt="" aria-hidden />
             </Link>
-            <Link className="card" href="/years">
-              <h3>Как это было</h3>
-              <p>Темы карнавала по годам: от «Города мастеров» до «Мы Вятские — люди хватские!».</p>
+            <Link className="card guide-card guide-card--years" href="/years">
+              <div className="guide-card__copy">
+                <h3>Как это было</h3>
+                <p>Темы карнавала по годам: от «Города мастеров» до «Мы Вятские — люди хватские!».</p>
+                <span className="guide-card__aside">Заглянем в прошлое</span>
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="guide-card__figure" src="/decor/guides/years.webp" alt="" aria-hidden />
             </Link>
-            <Link className="card" href="/map">
-              <h3>Карта праздника</h3>
-              <p>Площадки, сцены, маршрут шествия, торговые ряды и парковки.</p>
+            <Link className="card guide-card guide-card--map" href="/map">
+              <div className="guide-card__copy">
+                <h3>Карта праздника</h3>
+                <p>Площадки, сцены, маршрут шествия, торговые ряды и парковки.</p>
+                <span className="guide-card__aside">Покажу дорогу</span>
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="guide-card__figure" src="/decor/guides/map.webp" alt="" aria-hidden />
             </Link>
           </div>
         </section>
@@ -71,6 +96,13 @@ export default function HomePage() {
 
         <section className="section section--tight">
           <h2>Что вас ждёт</h2>
+          <div className="section-guide">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/decor/guides/crafts.webp" alt="" aria-hidden />
+            <p className="section-guide__speech">
+              Тут и мастера, и игрушки, и хороводы! Берите ребятню — каждому найдётся диво.
+            </p>
+          </div>
           <Figure
             image="mari-ensemble"
             alt="Фольклорный ансамбль в национальных костюмах"
