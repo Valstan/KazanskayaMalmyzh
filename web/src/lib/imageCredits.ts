@@ -67,7 +67,7 @@ export const IMAGE_CREDITS: ImageCredit[] = [
     license: 'CC BY-SA 4.0',
     licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0',
     sourceUrl: 'https://commons.wikimedia.org/wiki/File:Марийский_фольклорный_ансамбль_в_национальных_костюмах3.jpg',
-    usage: 'История / Годы — народы Малмыжа (марийский ансамбль)',
+    usage: 'Программа / История / Годы — народы Малмыжа (марийский ансамбль)',
   },
   {
     slug: 'carousel',
@@ -94,6 +94,6 @@ export const IMAGE_CREDITS: ImageCredit[] = [
     license: 'CC BY-SA 4.0',
     licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0',
     sourceUrl: 'https://commons.wikimedia.org/wiki/File:Celebration_Fireworks_In_The_Black_Night_Sky.jpg',
-    usage: 'Программа — шапка (вечерний фейерверк)',
+    usage: 'Программа — вечерние события и фейерверк',
   },
 ]

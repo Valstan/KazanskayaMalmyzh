@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { IMAGE_CREDITS } from '../../../lib/imageCredits'
 import { GALLERY_ATTRIBUTION } from '../../../lib/galleryPhotos'
 import { Hero } from '../_components/Hero'
+import { YEARS } from '../../../lib/years'
 
 // /istochniki-foto — атрибуция свободных фотографий (Wikimedia Commons) одной
 // страницей. Полностью статична (данные — const в lib/imageCredits.ts). Для
@@ -57,6 +58,32 @@ export default function CreditsPage() {
             Снимки самого праздника (галерея, часть шапок страниц) — из фотоархива оргкомитета Ярмарки Казанской:{' '}
             <strong>{GALLERY_ATTRIBUTION}</strong>. Логотип праздника предоставлен организаторами.
           </p>
+
+          <h2>Фотолетопись по годам</h2>
+          <p>Исторические снимки на страницах летописи взяты из следующих публикаций:</p>
+          <ul className="credits-list">
+            {YEARS.filter((year) => year.photos.some((photo) => photo.credit.url)).map((year) => {
+              const credits = [
+                ...new Map(
+                  year.photos
+                    .filter((photo) => photo.credit.url)
+                    .map((photo) => [photo.credit.url, photo.credit] as const),
+                ).values(),
+              ]
+              return (
+                <li key={year.year}>
+                  <span className="c-title">{year.year} год</span>
+                  {credits.map((credit) => (
+                    <span className="c-meta" key={credit.url}>
+                      <a href={credit.url!} target="_blank" rel="noreferrer noopener">
+                        {credit.label} ↗
+                      </a>
+                    </span>
+                  ))}
+                </li>
+              )
+            })}
+          </ul>
 
           <div className="notice">
             Если вы автор снимка и хотите изменить подпись или убрать фото — напишите оргкомитету, мы оперативно
