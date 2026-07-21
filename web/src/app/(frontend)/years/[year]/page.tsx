@@ -78,6 +78,16 @@ export default async function YearPage({ params }: { params: Promise<{ year: str
             </figure>
           ))}
 
+          {info.photos.length === 0 ? (
+            <figure className="figure content-guide">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/decor/guides/years.webp" alt="Скоморох листает летопись Ярмарки Казанской" loading="lazy" />
+              <figcaption>
+                Фотографии этого года пока не найдены — Скоморох бережёт место для будущего пополнения летописи.
+              </figcaption>
+            </figure>
+          ) : null}
+
           {info.sources.length > 0 ? (
             <>
               <h2>Источники</h2>

@@ -19,6 +19,32 @@ export type ProgramEvent = {
 
 type Status = 'live' | 'next' | 'upcoming' | 'past'
 
+type EventVisual = { src: string; alt: string }
+
+function visualForEvent(event: ProgramEvent): EventVisual {
+  const text = [event.title, event.summary, event.venue, event.location].filter(Boolean).join(' ').toLocaleLowerCase('ru')
+
+  if (text.includes('фейерверк') || text.includes('дискотек') || text.includes('неонов')) {
+    return { src: '/decor/fireworks.jpg', alt: 'Фейерверк над вечерним праздником' }
+  }
+  if (text.includes('танц')) {
+    return { src: '/decor/hero-fair.jpg', alt: 'Народный танец на празднике' }
+  }
+  if (text.includes('куштымаш') || text.includes('этно') || text.includes('националь')) {
+    return { src: '/decor/mari-ensemble.jpg', alt: 'Фольклорный ансамбль в национальных костюмах' }
+  }
+  if (text.includes('мастер') || text.includes('ремес')) {
+    return { src: '/decor/guides/crafts.webp', alt: 'Скоморох приглашает в Город мастеров' }
+  }
+  if (text.includes('шеств') || text.includes('карнавал')) {
+    return { src: '/decor/oa-03.jpg', alt: 'Костюмированное шествие Ярмарки Казанской' }
+  }
+  if (text.includes('открыт') || text.includes('стадион') || text.includes('концерт')) {
+    return { src: '/decor/oa-05.jpg', alt: 'Открытие Ярмарки Казанской на главной сцене' }
+  }
+  return { src: '/decor/guides/program.webp', alt: 'Скоморох показывает программу праздника' }
+}
+
 const fmtTime = new Intl.DateTimeFormat('ru-RU', {
   hour: '2-digit',
   minute: '2-digit',
@@ -103,21 +129,26 @@ export function ProgramLive({ events }: { events: ProgramEvent[] }) {
       <section className="section section--tight">
         {events.map((e) => {
           const status = liveWindow ? statusById.get(e.id) : undefined
+          const visual = visualForEvent(e)
           return (
             <div
               className={`event${status === 'live' ? ' is-live' : ''}${status === 'next' ? ' is-next' : ''}${status === 'past' ? ' is-past' : ''}`}
               key={e.id}
             >
-              <div className="when">
-                {fmtTime.format(new Date(e.startDate))}
-                {e.endDate ? `–${fmtTime.format(new Date(e.endDate))}` : ''} — {e.title}
-                {status === 'live' && <span className="status-badge status-badge--live">идёт сейчас</span>}
-                {status === 'next' && <span className="status-badge status-badge--next">далее</span>}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="event__image" src={visual.src} alt={visual.alt} loading="lazy" />
+              <div className="event__content">
+                <div className="when">
+                  {fmtTime.format(new Date(e.startDate))}
+                  {e.endDate ? `–${fmtTime.format(new Date(e.endDate))}` : ''} — {e.title}
+                  {status === 'live' && <span className="status-badge status-badge--live">идёт сейчас</span>}
+                  {status === 'next' && <span className="status-badge status-badge--next">далее</span>}
+                </div>
+                {e.venue || e.location ? (
+                  <div className="where">{[...new Set([e.venue, e.location].filter(Boolean))].join(' · ')}</div>
+                ) : null}
+                {e.summary ? <p>{e.summary}</p> : null}
               </div>
-              {e.venue || e.location ? (
-                <div className="where">{[...new Set([e.venue, e.location].filter(Boolean))].join(' · ')}</div>
-              ) : null}
-              {e.summary ? <p>{e.summary}</p> : null}
             </div>
           )
         })}

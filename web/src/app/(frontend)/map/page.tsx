@@ -161,6 +161,11 @@ export default async function MapPage() {
             Традиционный маршрут: от Центра культуры и досуга по улице Чернышевского → Комсомольская → Урицкого → Ленина
             → Карла Маркса → стадион.
           </p>
+          <figure className="figure content-guide">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/decor/guides/map.webp" alt="Скоморох показывает гостям маршрут по Малмыжу" loading="lazy" />
+            <figcaption>Скоморох подсказывает: все главные площадки находятся в центре и доступны пешком.</figcaption>
+          </figure>
           <div className="notice notice--important">
             В день праздника центр Малмыжа перекрыт для автомобилей. Парковки — на подъездах к центру; учитывайте это,
             если едете из другого города.
