@@ -50,6 +50,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="ornament" aria-hidden />
         </header>
 
+        <aside className="fest-cancel" role="alert">
+          <div className="wrap fest-cancel__inner">
+            <p className="fest-cancel__title">Праздник отменён</p>
+            <p className="fest-cancel__text">
+              Ярмарка Казанская, запланированная на 25&nbsp;июля 2026&nbsp;года, не состоится.
+              О новой дате проведения будет сообщено дополнительно.
+            </p>
+          </div>
+        </aside>
+
         {children}
 
         <footer className="site-footer">
