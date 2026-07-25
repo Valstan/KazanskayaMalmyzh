@@ -616,28 +616,159 @@
 /* Объявление об отмене праздника (site-wide alert)                    */
 /* ------------------------------------------------------------------ */
 .fest-cancel {
+  position: relative;
   background: #8a1420;
   background-image: linear-gradient(180deg, #a3182a 0%, #7c111d 100%);
   color: #fff;
-  border-top: 3px solid var(--gold, #d9a441);
-  border-bottom: 3px solid var(--gold, #d9a441);
+  box-shadow: 0 12px 26px rgba(76, 12, 18, 0.3);
+}
+
+/* Сигнальная лента по краям: полосу нельзя спутать с праздничным декором шапки */
+.fest-cancel::before,
+.fest-cancel::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--c-accent) 0 14px,
+    #7c111d 14px 28px
+  );
+}
+
+.fest-cancel::before {
+  top: 0;
+}
+
+.fest-cancel::after {
+  bottom: 0;
 }
 
 .fest-cancel__inner {
-  padding: 1rem 1.25rem;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+  padding: 1.9rem 1.25rem;
+  text-align: left;
+}
+
+.fest-cancel__sign {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border: 3px solid var(--c-accent);
+  border-radius: 50%;
+  background: rgba(255, 179, 0, 0.14);
+  color: var(--c-accent);
+  font-family: var(--font-display-f), serif;
+  font-size: 2.1rem;
+  line-height: 1;
+  animation: fest-cancel-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes fest-cancel-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 179, 0, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(255, 179, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fest-cancel__sign {
+    animation: none;
+  }
+}
+
+.fest-cancel__copy {
+  max-width: 46rem;
 }
 
 .fest-cancel__title {
   font-family: var(--font-display-f), serif;
-  font-size: clamp(1.25rem, 1rem + 1.5vw, 1.9rem);
+  font-size: clamp(1.4rem, 1.05rem + 1.7vw, 2.15rem);
   margin: 0 0 0.35rem;
   letter-spacing: 0.01em;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
 }
 
 .fest-cancel__text {
-  margin: 0 auto;
-  max-width: 46rem;
-  font-size: clamp(0.95rem, 0.9rem + 0.4vw, 1.1rem);
+  margin: 0;
+  font-size: clamp(1rem, 0.92rem + 0.5vw, 1.18rem);
   line-height: 1.5;
+}
+
+.fest-cancel__meta {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 236, 200, 0.8);
+}
+
+@media (max-width: 640px) {
+  .fest-cancel__inner {
+    gap: 0.8rem;
+    padding: 1.4rem 1rem;
+  }
+
+  .fest-cancel__sign {
+    width: 42px;
+    height: 42px;
+    font-size: 1.5rem;
+    align-self: flex-start;
+  }
+}
+
+/* Компактная плашка отмены внутри контента (главная — вместо отсчёта, /program — над афишей) */
+.cancel-plate {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.1rem 0 0.3rem;
+  padding: 0.85rem 1.05rem;
+  border: 2px solid var(--c-primary-dark);
+  border-left-width: 9px;
+  border-radius: var(--r-md);
+  background: #fff2ef;
+  box-shadow: var(--shadow-card);
+  color: var(--c-primary-dark);
+  font-family: var(--font-heading-f);
+  font-weight: 700;
+  font-size: 1.02rem;
+  line-height: 1.45;
+}
+
+.cancel-plate__sign {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--c-primary-dark);
+  border-radius: 50%;
+  font-family: var(--font-display-f), serif;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.hero__meta--cancelled {
+  color: var(--c-text-muted);
+  text-decoration-color: var(--c-primary);
+}
+
+/* Планировавшаяся программа — приглушена, чтобы не читалась как действующая афиша */
+.program--cancelled .event__image {
+  filter: grayscale(0.75) contrast(0.95);
+}
+
+.program--cancelled .when {
+  color: var(--c-text-muted);
 }

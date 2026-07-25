@@ -3,7 +3,8 @@ import Link from 'next/link'
 import React from 'react'
 import { Yeseva_One, Nunito_Sans, PT_Sans } from 'next/font/google'
 
-import { SITE_URL, SITE_NAME, FEST_DATE_HUMAN } from '../../lib/site'
+import { SITE_URL, SITE_NAME, FEST_DATE_HUMAN, FEST_CANCELLED, FEST_CANCEL_LEAD, FEST_CANCEL_NOTE } from '../../lib/site'
+import { CancelBanner } from './_components/CancelNotice'
 import { Metrika } from './_components/Metrika'
 import { LiveInternet } from './_components/LiveInternet'
 import { SiteNav } from './_components/SiteNav'
@@ -16,18 +17,25 @@ const display = Yeseva_One({ subsets: ['cyrillic', 'latin'], weight: '400', vari
 const heading = Nunito_Sans({ subsets: ['cyrillic', 'latin'], weight: ['600', '700', '800'], variable: '--font-heading', display: 'swap' })
 const body = PT_Sans({ subsets: ['cyrillic', 'latin'], weight: ['400', '700'], variable: '--font-body', display: 'swap' })
 
+// Пока праздник отменён, титул и описания говорят об этом прямо: выдача
+// поисковиков — первое место, где человек проверяет «а состоится ли».
+const TITLE = FEST_CANCELLED ? `${SITE_NAME} — праздник 25 июля отменён` : `${SITE_NAME} — 25 июля 2026`
+const DESCRIPTION = FEST_CANCELLED
+  ? `${FEST_CANCEL_LEAD} ${FEST_CANCEL_NOTE} Ярмарка Казанская — главный праздник Малмыжского района: карнавальное шествие, Город мастеров, Этногород, торговые ряды.`
+  : 'Ярмарка Казанская — главный праздник Малмыжского района: карнавальное шествие, Город мастеров, Этногород, торговые ряды. Суббота 25 июля 2026, Малмыж.'
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — 25 июля 2026`,
+    default: TITLE,
     template: `%s — ${SITE_NAME}`,
   },
-  description:
-    'Ярмарка Казанская — главный праздник Малмыжского района: карнавальное шествие, Город мастеров, Этногород, торговые ряды. Суббота 25 июля 2026, Малмыж.',
+  description: DESCRIPTION,
   openGraph: {
-    title: `${SITE_NAME} — 25 июля 2026`,
-    description:
-      'Карнавальное шествие, Город мастеров, Этногород, торговые ряды и фейерверк. Малмыж, 25 июля 2026.',
+    title: TITLE,
+    description: FEST_CANCELLED
+      ? `${FEST_CANCEL_LEAD} ${FEST_CANCEL_NOTE}`
+      : 'Карнавальное шествие, Город мастеров, Этногород, торговые ряды и фейерверк. Малмыж, 25 июля 2026.',
     url: SITE_URL,
     locale: 'ru_RU',
     type: 'website',
@@ -50,15 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="ornament" aria-hidden />
         </header>
 
-        <aside className="fest-cancel" role="alert">
-          <div className="wrap fest-cancel__inner">
-            <p className="fest-cancel__title">Праздник отменён</p>
-            <p className="fest-cancel__text">
-              Ярмарка Казанская, запланированная на 25&nbsp;июля 2026&nbsp;года, не состоится.
-              О новой дате проведения будет сообщено дополнительно.
-            </p>
-          </div>
-        </aside>
+        {FEST_CANCELLED && <CancelBanner />}
 
         {children}
 
@@ -69,8 +69,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <img className="site-footer__logo" src="/decor/logo.png" alt="Логотип Ярмарки Казанской" width={96} height={118} />
             <p className="site-footer__brand">Ярмарка&nbsp;Казанская</p>
             <p>
-              {FEST_DATE_HUMAN} · г. Малмыж, Кировская область. С девяти утра субботы — до утра
-              воскресенья.
+              {FEST_CANCELLED ? (
+                <>
+                  г. Малмыж, Кировская область. Праздник {FEST_DATE_HUMAN} отменён — о новой дате
+                  сообщим здесь.
+                </>
+              ) : (
+                <>
+                  {FEST_DATE_HUMAN} · г. Малмыж, Кировская область. С девяти утра субботы — до утра
+                  воскресенья.
+                </>
+              )}
             </p>
             <p>
               Оргкомитет: карнавал и ремесленники — (83347) 2‑22‑28, торговля — (83347) 2‑28‑83.

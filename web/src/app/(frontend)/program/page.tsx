@@ -3,15 +3,18 @@ import { getPayload } from 'payload'
 
 import config from '@payload-config'
 import { festivalJsonLd, programFaqJsonLd } from '../../../lib/seo'
+import { FEST_CANCELLED, FEST_CANCEL_LEAD, FEST_CANCEL_NOTE } from '../../../lib/site'
 import { Hero, Figure } from '../_components/Hero'
+import { CancelPlate } from '../_components/CancelNotice'
 import { ProgramLive, type ProgramEvent } from '../_components/ProgramLive'
 
 export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Программа праздника',
-  description:
-    'Программа Ярмарки Казанской — 2026: карнавальное шествие, Город мастеров, Этногород, сцена, торговые ряды и фейерверк. 25 июля 2026, Малмыж.',
+  description: FEST_CANCELLED
+    ? `${FEST_CANCEL_LEAD} ${FEST_CANCEL_NOTE} Ниже сохранена планировавшаяся программа 2026 года: шествие, Город мастеров, Этногород, сцена и фейерверк.`
+    : 'Программа Ярмарки Казанской — 2026: карнавальное шествие, Город мастеров, Этногород, сцена, торговые ряды и фейерверк. 25 июля 2026, Малмыж.',
 }
 
 export default async function ProgramPage() {
@@ -40,14 +43,25 @@ export default async function ProgramPage() {
 
       <Hero
         image="hero-fair"
-        kicker="25 июля 2026"
+        kicker={FEST_CANCELLED ? '25 июля 2026 — отменено' : '25 июля 2026'}
         title="Программа праздника"
-        subtitle="От утреннего шествия до ночного фейерверка"
+        subtitle={
+          FEST_CANCELLED
+            ? 'Праздник отменён — ниже сохранена планировавшаяся программа'
+            : 'От утреннего шествия до ночного фейерверка'
+        }
         decor="program"
       />
 
       <div className="wrap page-shell">
         <div className="flourish" aria-hidden />
+
+        {FEST_CANCELLED && (
+          <CancelPlate>
+            {FEST_CANCEL_LEAD} Ни один из пунктов ниже не состоится — расписание оставлено как память о
+            планах 2026 года. {FEST_CANCEL_NOTE}
+          </CancelPlate>
+        )}
 
         {events.length > 0 ? (
           <ProgramLive events={events} />
@@ -79,8 +93,9 @@ export default async function ProgramPage() {
               caption="Финал праздника — фейерверк над Малмыжем"
             />
             <div className="notice">
-              Праздник начинается в 9 утра субботы. Центр города в этот день перекрыт для автотранспорта — планируйте
-              дорогу заранее.
+              {FEST_CANCELLED
+                ? 'Так праздник был устроен из года в год. В 2026 году он отменён — о новой дате сообщим на сайте.'
+                : 'Праздник начинается в 9 утра субботы. Центр города в этот день перекрыт для автотранспорта — планируйте дорогу заранее.'}
             </div>
           </section>
         )}
@@ -113,8 +128,12 @@ export default async function ProgramPage() {
           <h2>Частые вопросы</h2>
           <div className="faq">
             <details className="faq__item" open>
-              <summary>Когда проходит праздник?</summary>
-              <p className="faq__answer">Суббота 25 июля 2026, с 9 утра — до утра воскресенья.</p>
+              <summary>Состоится ли праздник 25 июля 2026?</summary>
+              <p className="faq__answer">
+                {FEST_CANCELLED
+                  ? `${FEST_CANCEL_LEAD} ${FEST_CANCEL_NOTE}`
+                  : 'Да: суббота 25 июля 2026, с 9 утра — до утра воскресенья.'}
+              </p>
             </details>
             <details className="faq__item">
               <summary>Вход платный?</summary>

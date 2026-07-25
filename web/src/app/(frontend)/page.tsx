@@ -1,8 +1,9 @@
 import Link from 'next/link'
 
-import { FEST_THEME, FEST_THEME_NOTE } from '../../lib/site'
+import { FEST_THEME, FEST_THEME_NOTE, FEST_CANCELLED, FEST_CANCEL_NOTE } from '../../lib/site'
 import { festivalJsonLd } from '../../lib/seo'
 import { HomeHero, Figure } from './_components/Hero'
+import { CancelPlate } from './_components/CancelNotice'
 import { Countdown } from './_components/Countdown'
 
 export const revalidate = 3600
@@ -21,12 +22,23 @@ export default function HomePage() {
         <img className="hero__logo" src="/decor/logo.png" alt="Логотип Ярмарки Казанской" width={104} height={128} />
         <p className="kicker">Малмыж · Кировская область</p>
         <h1>Ярмарка Казанская</h1>
-        <p className="hero__meta">Суббота, 25 июля 2026 · с 9 утра до утра воскресенья</p>
+        {FEST_CANCELLED ? (
+          <p className="hero__meta hero__meta--cancelled">
+            <s>Суббота, 25 июля 2026 · с 9 утра до утра воскресенья</s>
+          </p>
+        ) : (
+          <p className="hero__meta">Суббота, 25 июля 2026 · с 9 утра до утра воскресенья</p>
+        )}
         <p className="hero__theme">
           Тема года — <strong>{FEST_THEME}</strong> · {FEST_THEME_NOTE}
         </p>
-        {/* Открытие площадок — 9:00 МСК дня праздника */}
-        <Countdown startIso="2026-07-25T09:00:00+03:00" />
+        {/* Открытие площадок — 9:00 МСК дня праздника; при отмене вместо отсчёта
+            (и вместо плашки «праздник идёт») — объявление. */}
+        {FEST_CANCELLED ? (
+          <CancelPlate>Праздника 25 июля не будет. {FEST_CANCEL_NOTE}</CancelPlate>
+        ) : (
+          <Countdown startIso="2026-07-25T09:00:00+03:00" />
+        )}
         <div className="hero__cta">
           <Link className="btn btn--lg" href="/program">
             Программа праздника
@@ -38,7 +50,12 @@ export default function HomePage() {
         <figure className="fair-guide fair-guide--hero">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/decor/guides/welcome.webp" alt="Скоморох-гид приглашает гостей на ярмарку" />
-          <figcaption>Ай да на ярмарку! Всё покажу — ничего не пропустите.</figcaption>
+          {/* Реплика гида не должна зазывать на отменённый праздник */}
+          <figcaption>
+            {FEST_CANCELLED
+              ? 'Нынче ярмарки не будет. А какова она бывала — покажу и расскажу.'
+              : 'Ай да на ярмарку! Всё покажу — ничего не пропустите.'}
+          </figcaption>
         </figure>
       </HomeHero>
 
@@ -95,12 +112,14 @@ export default function HomePage() {
         <div className="flourish" aria-hidden />
 
         <section className="section section--tight">
-          <h2>Что вас ждёт</h2>
+          <h2>{FEST_CANCELLED ? 'Чем славится ярмарка' : 'Что вас ждёт'}</h2>
           <div className="section-guide">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/decor/guides/crafts.webp" alt="" aria-hidden />
             <p className="section-guide__speech">
-              Тут и мастера, и игрушки, и хороводы! Берите ребятню — каждому найдётся диво.
+              {FEST_CANCELLED
+                ? 'Каждый год — и мастера, и игрушки, и хороводы. Вернёмся к этому, как назначат новую дату.'
+                : 'Тут и мастера, и игрушки, и хороводы! Берите ребятню — каждому найдётся диво.'}
             </p>
           </div>
           <Figure
@@ -118,9 +137,19 @@ export default function HomePage() {
             <li>Вечерняя программа, ночная дискотека и фейерверк.</li>
           </ul>
           <div className="notice">
-            Официальная афиша 2026 года опубликована — расписание по часам на{' '}
-            <Link href="/program">странице программы</Link>. Хотите участвовать в карнавале или торговле? Телефоны
-            оргкомитета — внизу страницы.
+            {FEST_CANCELLED ? (
+              <>
+                Так праздник проходит из года в год. В 2026-м он отменён: опубликованная афиша 25 июля не
+                состоится — она сохранена на <Link href="/program">странице программы</Link> как планировавшаяся.
+                Вопросы по участию — по телефонам оргкомитета внизу страницы.
+              </>
+            ) : (
+              <>
+                Официальная афиша 2026 года опубликована — расписание по часам на{' '}
+                <Link href="/program">странице программы</Link>. Хотите участвовать в карнавале или торговле?
+                Телефоны оргкомитета — внизу страницы.
+              </>
+            )}
           </div>
         </section>
       </div>
