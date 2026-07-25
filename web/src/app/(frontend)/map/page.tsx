@@ -3,14 +3,17 @@ import Image from 'next/image'
 import { getPayload } from 'payload'
 
 import config from '@payload-config'
+import { FEST_CANCELLED, FEST_CANCEL_LEAD, FEST_CANCEL_NOTE } from '../../../lib/site'
+import { CancelPlate } from '../_components/CancelNotice'
 import { Hero } from '../_components/Hero'
 
 export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Карта праздника',
-  description:
-    'Карта Ярмарки Казанской: площадки, сцены, маршрут карнавального шествия, торговые ряды. Малмыж, 25 июля 2026.',
+  description: FEST_CANCELLED
+    ? `${FEST_CANCEL_LEAD} ${FEST_CANCEL_NOTE} Ниже — площадки, сцены и маршрут шествия, как они планировались.`
+    : 'Карта Ярмарки Казанской: площадки, сцены, маршрут карнавального шествия, торговые ряды. Малмыж, 25 июля 2026.',
 }
 
 const TYPE_LABEL: Record<string, string> = {
@@ -99,6 +102,13 @@ export default async function MapPage() {
         <div className="flourish" aria-hidden />
 
         <section className="section section--tight">
+          {FEST_CANCELLED && (
+            <CancelPlate>
+              {FEST_CANCEL_LEAD} Площадки и маршрут ниже — планы 2026 года, они не будут развёрнуты.{' '}
+              {FEST_CANCEL_NOTE}
+            </CancelPlate>
+          )}
+
           {intro ? <p className="lead">{intro}</p> : null}
 
           {planUrl ? (
@@ -117,8 +127,9 @@ export default async function MapPage() {
             <>
               <h2>Площадки праздника</h2>
               <p>
-                Всё происходит в центре города: в городском парке и сквере, на центральных улицах, на стадионе и в РЦКД.
-                Вот что и во сколько идёт на каждой площадке.
+                {FEST_CANCELLED
+                  ? 'Праздник разворачивается в центре города: в городском парке и сквере, на центральных улицах, на стадионе и в РЦКД. Ниже — как это планировалось в 2026 году; в силу расписание не вступит.'
+                  : 'Всё происходит в центре города: в городском парке и сквере, на центральных улицах, на стадионе и в РЦКД. Вот что и во сколько идёт на каждой площадке.'}
               </p>
               <div className="venues">
                 {venues.map((v) => (
