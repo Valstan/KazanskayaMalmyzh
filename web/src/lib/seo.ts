@@ -1,4 +1,4 @@
-import { SITE_URL, FEST_DATE_ISO } from './site'
+import { SITE_URL, FEST_DATE_ISO, FEST_CANCELLED, FEST_CANCEL_LEAD, FEST_CANCEL_NOTE } from './site'
 
 // SEO/GEO-пакет #051: JSON-LD праздника. Один источник для главной и /program,
 // чтобы разметка не расходилась. Факты подтверждены афишей-2026 (пост РЦКД
@@ -27,7 +27,15 @@ export type FestivalSubEvent = {
   venue?: string | null
 }
 
-/** Festival Event; subEvents — опубликованные события афиши из Payload. */
+const DESCRIPTION =
+  'Главный праздник Малмыжского района: карнавальное шествие по теме года, «Город мастеров», «Этногород», торговые ряды, вечерняя программа и фейерверк.'
+
+/**
+ * Festival Event; subEvents — опубликованные события афиши из Payload.
+ * При отмене — `EventCancelled` с сохранённой исходной датой (требование
+ * Google для отменённых событий) и без offers: «бесплатный вход» на
+ * несостоявшийся праздник — противоречие.
+ */
 export function festivalJsonLd(subEvents: FestivalSubEvent[] = []) {
   return {
     '@context': 'https://schema.org',
@@ -35,21 +43,24 @@ export function festivalJsonLd(subEvents: FestivalSubEvent[] = []) {
     name: 'Ярмарка Казанская в Малмыже — 2026',
     startDate: FEST_START,
     endDate: FEST_END,
-    eventStatus: 'https://schema.org/EventScheduled',
+    eventStatus: FEST_CANCELLED ? 'https://schema.org/EventCancelled' : 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     location: PLACE,
     image: [`${SITE_URL}/decor/afisha-2026.jpg`, `${SITE_URL}/decor/logo.png`],
-    description:
-      'Главный праздник Малмыжского района: карнавальное шествие по теме года, «Город мастеров», «Этногород», торговые ряды, вечерняя программа и фейерверк.',
+    description: FEST_CANCELLED ? `${FEST_CANCEL_LEAD} ${FEST_CANCEL_NOTE} ${DESCRIPTION}` : DESCRIPTION,
     url: SITE_URL,
     isAccessibleForFree: true,
-    offers: {
-      '@type': 'Offer',
-      price: 0,
-      priceCurrency: 'RUB',
-      availability: 'https://schema.org/InStock',
-      url: SITE_URL,
-    },
+    ...(FEST_CANCELLED
+      ? {}
+      : {
+          offers: {
+            '@type': 'Offer',
+            price: 0,
+            priceCurrency: 'RUB',
+            availability: 'https://schema.org/InStock',
+            url: SITE_URL,
+          },
+        }),
     organizer: {
       '@type': 'Organization',
       name: 'Оргкомитет «Ярмарки Казанской» (Малмыжский район)',
@@ -63,6 +74,9 @@ export function festivalJsonLd(subEvents: FestivalSubEvent[] = []) {
             ...(e.summary ? { description: e.summary } : {}),
             startDate: e.startDate,
             ...(e.endDate ? { endDate: e.endDate } : {}),
+            eventStatus: FEST_CANCELLED
+              ? 'https://schema.org/EventCancelled'
+              : 'https://schema.org/EventScheduled',
             location: e.venue ? { ...PLACE, name: `${e.venue}, г. Малмыж` } : PLACE,
           })),
         }
@@ -77,10 +91,14 @@ export const programFaqJsonLd = {
   mainEntity: [
     {
       '@type': 'Question',
-      name: 'Когда проходит Ярмарка Казанская в 2026 году?',
+      name: FEST_CANCELLED
+        ? 'Состоится ли праздник 25 июля 2026?'
+        : 'Когда проходит Ярмарка Казанская в 2026 году?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'В субботу 25 июля 2026 года в Малмыже. Праздник начинается в 9 утра и длится до утра воскресенья.',
+        text: FEST_CANCELLED
+          ? `${FEST_CANCEL_LEAD} ${FEST_CANCEL_NOTE}`
+          : 'В субботу 25 июля 2026 года в Малмыже. Праздник начинается в 9 утра и длится до утра воскресенья.',
       },
     },
     {

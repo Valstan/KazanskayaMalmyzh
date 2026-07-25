@@ -2,6 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 
+import { FEST_CANCELLED } from '../../../lib/site'
+
 // Live-режим программы дня X (M3-минимум, адаптация ScheduleList Сабантуя):
 // баннер «Сейчас идёт / Далее» + статусы live/next/past у событий. Статусы
 // считаются на клиенте после монтирования (тик раз в минуту) — сервер отдаёт
@@ -95,8 +97,10 @@ export function ProgramLive({ events }: { events: ProgramEvent[] }) {
   }, [events, now])
 
   // Live-режим включается только в окрестности дня X (±36 ч) — иначе бейджи
-  // «далее» и баннер висели бы неделями до праздника.
+  // «далее» и баннер висели бы неделями до праздника. При отмене праздника
+  // режим выключен совсем: «сейчас идёт» по несостоявшейся афише — ложь.
   const liveWindow =
+    !FEST_CANCELLED &&
     now !== null &&
     events.some((e) => {
       const start = parse(e.startDate)
@@ -126,7 +130,7 @@ export function ProgramLive({ events }: { events: ProgramEvent[] }) {
         </div>
       )}
 
-      <section className="section section--tight">
+      <section className={`section section--tight${FEST_CANCELLED ? ' program--cancelled' : ''}`}>
         {events.map((e) => {
           const status = liveWindow ? statusById.get(e.id) : undefined
           const visual = visualForEvent(e)
