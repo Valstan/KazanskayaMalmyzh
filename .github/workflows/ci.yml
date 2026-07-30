@@ -1,7 +1,12 @@
 name: CI
 
-# Зелёные гейты PR (постулат 30: авто-мерж на зелёных): lint, typecheck, сборка
-# против эфемерной БД — та же схема, что у прод-сборки, но без standalone/деплоя.
+# Зелёные гейты PR (постулат 30: авто-мерж на зелёных): секреты, lint, CSS,
+# typecheck, тесты, сборка против эфемерной БД — та же схема, что у прод-сборки,
+# но без standalone/деплоя.
+#
+# Ревизия #104 (2026-07-30): каждый шаг здесь имеет показанный красный прогон,
+# иначе он не считается заведённым. Правило, стоящее `warn`, гейтом не является —
+# `next lint` падает только на `error`.
 
 on:
   pull_request:
@@ -33,6 +38,23 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          # Полная история: gitleaks проверяет и удалённые в последующих коммитах
+          # секреты, а не только текущее состояние файлов. Репо маленькое (~64
+          # коммита) — цена этого несколько секунд.
+          fetch-depth: 0
+
+      # Секреты в репо запрещены (#008: боевые значения живут в
+      # /etc/kazanskaya/kazanskaya.env, в git — только .env.example). До сих пор
+      # это держалось дисциплиной; теперь проверяется.
+      - name: Secret scan (gitleaks)
+        env:
+          GITLEAKS_VERSION: 8.30.1
+        run: |
+          set -e
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar xz -C /tmp gitleaks
+          /tmp/gitleaks git . --no-banner --redact --exit-code 1
 
       - uses: actions/setup-node@v5
         with:
@@ -60,12 +82,27 @@ jobs:
         working-directory: web
         run: pnpm lint
 
+      # CSS-темы две и обе крупные; stylelint взят в конфигурации
+      # `recommended` — только возможные ошибки (неизвестное свойство, пустой
+      # блок, битый синтаксис), без стилистики: шумные правила про rgba/hex
+      # завалили бы гейт сотней замечаний и он превратился бы в фон.
+      - name: Lint CSS
+        working-directory: web
+        run: pnpm lint:css
+
       - name: Typecheck
         working-directory: web
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kazanskaya_build
           PAYLOAD_SECRET: ci-build-only-secret-not-used-at-runtime
         run: pnpm typecheck
+
+      # Тесты на чистую логику: JSON-LD праздника и летопись годов. Оба набора
+      # написаны вокруг уже случавшихся багов — расхождение статуса праздника и
+      # его subEvent и сбитый порядок годов.
+      - name: Test
+        working-directory: web
+        run: pnpm test
 
       - name: Build
         working-directory: web
