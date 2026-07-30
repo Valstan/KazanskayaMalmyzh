@@ -208,6 +208,20 @@ a:hover { color: var(--c-primary-dark); }
 .site-nav a:hover { opacity: 1; border-bottom-color: var(--c-accent-hover); }
 .site-nav a[aria-current='page'] { opacity: 1; border-bottom-color: var(--c-accent); }
 
+/* Выход в общий каталог сайтов Малмыжа: соседний, но не «наш» раздел — отделён
+   чертой и приглушён, чтобы не конкурировать с навигацией по празднику. */
+.site-nav a.site-nav__ext {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0 6px 20px;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  opacity: 0.82;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.site-nav a.site-nav__ext::after { content: '↗'; font-size: 0.9em; }
+
 /* Бургер: зона нажатия 44×44, три линии 2px */
 .burger {
   display: none;
@@ -268,6 +282,13 @@ a:hover { color: var(--c-primary-dark); }
     border-radius: var(--r-md);
     justify-content: center;
     font-weight: 800;
+  }
+  /* В выпадающем меню каталог — последней строкой, отбит чертой сверху */
+  .site-nav a.site-nav__ext {
+    margin-top: 0.5rem;
+    padding: 0 1.25rem;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
   }
 }
 

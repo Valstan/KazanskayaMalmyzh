@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 
+import { SERVICES_CATALOG_URL } from '../../../lib/site'
+
 // Навигация шапки (лубок-редизайн): на десктопе — строка ссылок с жёлтым
 // подчёркиванием активной, на мобайле — бургер 44×44 и выпадающее меню.
 // Меню закрывается при переходе (usePathname) и по Escape.
@@ -54,6 +56,11 @@ export function SiteNav() {
             {item.label}
           </Link>
         ))}
+        {/* Выход в общий каталог сайтов Малмыжа — единая точка входа экосистемы.
+            Внешний адрес, поэтому обычный <a>, а не Link. */}
+        <a className="site-nav__ext" href={SERVICES_CATALOG_URL}>
+          Сервисы Малмыжа
+        </a>
       </nav>
     </>
   )

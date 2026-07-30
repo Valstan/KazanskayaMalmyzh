@@ -8,7 +8,12 @@ import { Hero, Figure } from '../_components/Hero'
 import { CancelPlate } from '../_components/CancelNotice'
 import { ProgramLive, type ProgramEvent } from '../_components/ProgramLive'
 
-export const revalidate = 60
+// Страница читает афишу из БД, а сборка идёт в CI против пустой эфемерной базы
+// (G20 — бокс не тянет next build). С `revalidate` в пререндер попадал бы каркас
+// «расписание временно недоступно», и первые посетители после деплоя видели бы
+// именно его: ISR отдаёт протухший ответ, а ревалидацию лишь запускает — на
+// редком трафике окно пустоты растягивается далеко за 60 секунд (G203).
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Программа праздника',

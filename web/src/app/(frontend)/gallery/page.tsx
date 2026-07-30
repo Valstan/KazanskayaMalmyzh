@@ -5,7 +5,8 @@ import config from '@payload-config'
 import { Hero } from '../_components/Hero'
 import { GALLERY_2024, GALLERY_ATTRIBUTION } from '../../../lib/galleryPhotos'
 
-export const revalidate = 60
+// Альбомы приходят из БД — по той же причине, что на /program и /map (G203).
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Галерея',
