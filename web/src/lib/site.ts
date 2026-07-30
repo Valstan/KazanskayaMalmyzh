@@ -19,5 +19,9 @@ export const FEST_CANCEL_LEAD =
 export const FEST_CANCEL_NOTE = 'О новой дате проведения будет сообщено дополнительно.'
 export const FEST_CANCEL_ANNOUNCED = '24 июля 2026'
 
+// Каталог сервисов Малмыжа (единая точка входа экосистемы, директива brain от
+// 2026-07-26). Домен вход.вмалмыже.рф — только в punycode (G133/G134).
+export const SERVICES_CATALOG_URL = 'https://xn--b1ae3a1a.xn--80adkdyec4j.xn--p1ai/services'
+
 // Ежегодные темы карнавала переехали в lib/years.ts (летопись с абзацами,
 // фото и источниками — данные /years и /years/<год>).

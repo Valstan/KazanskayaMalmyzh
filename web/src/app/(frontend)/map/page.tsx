@@ -7,7 +7,9 @@ import { FEST_CANCELLED, FEST_CANCEL_LEAD, FEST_CANCEL_NOTE } from '../../../lib
 import { CancelPlate } from '../_components/CancelNotice'
 import { Hero } from '../_components/Hero'
 
-export const revalidate = 60
+// Площадки и глобал festival-map читаются из БД — пререндер на пустой базе CI
+// дал бы «расписание по площадкам временно недоступно» до первой ревалидации (G203).
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Карта праздника',
