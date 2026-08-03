@@ -1,16 +1,56 @@
 import Link from 'next/link'
 
-import { FEST_THEME, FEST_THEME_NOTE, FEST_CANCELLED, FEST_CANCEL_NOTE } from '../../lib/site'
 import { festivalJsonLd } from '../../lib/seo'
-import { HomeHero, Figure } from './_components/Hero'
-import { CancelPlate } from './_components/CancelNotice'
-import { Countdown } from './_components/Countdown'
+import { HomeHero } from './_components/Hero'
 
 export const revalidate = 3600
 
-// JSON-LD Event (SEO-пакет #051) — общий билдер lib/seo.ts, на /program тот же
-// Event дополнен subEvent из афиши.
 const eventJsonLd = festivalJsonLd()
+
+const fairMemories = [
+  {
+    image: '/decor/oa-03.jpg',
+    alt: 'Костюмированное шествие Ярмарки Казанской у Богоявленского собора',
+    caption: 'Карнавальное шествие — главная визитная карточка ярмарки',
+  },
+  {
+    image: '/years/y2024-2.jpg',
+    alt: 'Гости и участники Ярмарки Казанской 2024 года',
+    caption: 'Встреча земляков, соседей и гостей из других районов',
+  },
+  {
+    image: '/decor/oa-06.jpg',
+    alt: 'Концерт на главной сцене Ярмарки Казанской',
+    caption: 'Музыка, костюмы и ощущение, что весь город стал одной большой сценой',
+  },
+]
+
+const districtPlaces = [
+  {
+    image: '/decor/malmyzh-cathedral.jpg',
+    alt: 'Богоявленский собор в Малмыже',
+    title: 'Исторический Малмыж',
+    text: 'Богоявленский собор, старые улицы, купеческие дома, Сибирский тракт и Болтушина гора собираются в неторопливую пешую прогулку.',
+  },
+  {
+    image: '/decor/vyatka-bank.jpg',
+    alt: 'Летний берег реки Вятки в Малмыжском районе',
+    title: 'Берега Вятки',
+    text: 'Юг Кировской области — это вода, высокое небо, поля и леса. Здесь хорошо оставить в расписании время не на «объект», а просто на тишину и свежий воздух.',
+  },
+  {
+    image: '/decor/kurya-backwater.jpg',
+    alt: 'Затон Курья с кувшинками в Малмыжском районе',
+    title: 'Затоны и лесные дороги',
+    text: 'Затон Курья показывает другой темп района: кувшинки, камыши и лес у воды. Для загородных мест лучше заранее уточнять подъезд и состояние дороги.',
+  },
+  {
+    image: '/decor/mitrofanovskaya-church.jpg',
+    alt: 'Митрофановская церковь в Малмыже',
+    title: 'Тихая архитектура',
+    text: 'Митрофановская церковь и историческая застройка напоминают: Малмыж интересен не только в один шумный день, но и в обычное летнее утро.',
+  },
+]
 
 export default function HomePage() {
   return (
@@ -20,152 +60,117 @@ export default function HomePage() {
       <HomeHero image="oa-02">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="hero__logo" src="/decor/logo.png" alt="Логотип Ярмарки Казанской" width={104} height={128} />
-        <p className="kicker">Малмыж · Кировская область</p>
-        <h1>Ярмарка Казанская</h1>
-        {FEST_CANCELLED ? (
-          <p className="hero__meta hero__meta--cancelled">
-            <s>Суббота, 25 июля 2026 · с 9 утра до утра воскресенья</s>
-          </p>
-        ) : (
-          <p className="hero__meta">Суббота, 25 июля 2026 · с 9 утра до утра воскресенья</p>
-        )}
-        <p className="hero__theme">
-          Тема года — <strong>{FEST_THEME}</strong> · {FEST_THEME_NOTE}
+        <p className="kicker">Малмыж · вспоминаем ярмарку · ждём 2027 год</p>
+        <h1>Ярмарка живёт в памяти. И ждёт нового лета.</h1>
+        <p className="hero__meta hero__meta--future">
+          В 2026 году праздник не состоялся и перенесён не будет. Дата ярмарки 2027 года пока не объявлена.
         </p>
-        {/* Открытие площадок — 9:00 МСК дня праздника; при отмене вместо отсчёта
-            (и вместо плашки «праздник идёт») — объявление. */}
-        {FEST_CANCELLED ? (
-          <CancelPlate>Праздника 25 июля не будет. {FEST_CANCEL_NOTE}</CancelPlate>
-        ) : (
-          <Countdown startIso="2026-07-25T09:00:00+03:00" />
-        )}
+        <p className="hero__theme">
+          А пока — листаем фотолетопись, вспоминаем голоса, костюмы и ремёсла и планируем поездку в Малмыж без спешки.
+        </p>
         <div className="hero__cta">
-          <Link className="btn btn--lg" href="/program">
-            Программа праздника
+          <Link className="btn btn--lg" href="/years">
+            Вспомнить прошлые годы
           </Link>
-          <Link className="btn btn--lg btn--outline" href="/map">
-            Как добраться
+          <Link className="btn btn--lg btn--outline" href="/history">
+            Узнать историю
           </Link>
         </div>
         <figure className="fair-guide fair-guide--hero">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/decor/guides/welcome.webp" alt="Скоморох-гид приглашает гостей на ярмарку" />
-          {/* Реплика гида не должна зазывать на отменённый праздник */}
-          <figcaption>
-            {FEST_CANCELLED
-              ? 'Нынче ярмарки не будет. А какова она бывала — покажу и расскажу.'
-              : 'Ай да на ярмарку! Всё покажу — ничего не пропустите.'}
-          </figcaption>
+          <img src="/decor/guides/years.webp" alt="Скоморох-летописец с фотографиями прошлых ярмарок" />
+          <figcaption>Пока нет новой афиши — откроем старые альбомы.</figcaption>
         </figure>
       </HomeHero>
 
-      <div className="wrap home-celebration">
-        <div className="flourish" aria-hidden />
-
-        <section className="section section--tight">
-          <h2>Заходи, честной народ, к нам на ярмаНку!</h2>
+      <div className="wrap home-celebration home-memory">
+        <section className="section section--tight home-intro">
+          <p className="eyebrow">1584 · купеческая традиция · четыре народа</p>
+          <h2>Что такое Ярмарка Казанская</h2>
           <p className="lead">
-            Главный праздник Малмыжского района и день города Малмыжа: с девяти утра субботы до утра воскресенья.
-            Карнавальное шествие по теме года, ремёсла, подворья и кухни четырёх народов, торговые ряды, вечерняя
-            программа и фейерверк.
+            Это не просто концерт и не просто торговые ряды. На один день Малмыж собирает вместе карнавальное шествие, мастеров, музыку, кухни и костюмы русских, татар, марийцев и удмуртов. Это день, когда местные показывают свой город таким, каким его любят.
           </p>
-          <div className="cards">
-            <Link className="card guide-card guide-card--program" href="/program">
-              <div className="guide-card__copy">
-                <h3>Программа</h3>
-                <p>Шествие, «Город мастеров», «Этногород», сцена и фейерверк — по часам.</p>
-                <span className="guide-card__aside">По часам — сюда!</span>
-              </div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="guide-card__figure" src="/decor/guides/program.webp" alt="" aria-hidden />
-            </Link>
-            <Link className="card guide-card guide-card--history" href="/history">
-              <div className="guide-card__copy">
-                <h3>История</h3>
-                <p>Малмыж с 1584 года, Сибирский тракт, купеческие лавки и престольная традиция.</p>
-                <span className="guide-card__aside">Царевна откроет летопись</span>
-              </div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="guide-card__figure" src="/decor/guides/history.webp" alt="" aria-hidden />
-            </Link>
-            <Link className="card guide-card guide-card--years" href="/years">
-              <div className="guide-card__copy">
-                <h3>Как это было</h3>
-                <p>Темы карнавала по годам: от «Города мастеров» до «Мы Вятские — люди хватские!».</p>
-                <span className="guide-card__aside">Заглянем в прошлое</span>
-              </div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="guide-card__figure" src="/decor/guides/years.webp" alt="" aria-hidden />
-            </Link>
-            <Link className="card guide-card guide-card--map" href="/map">
-              <div className="guide-card__copy">
-                <h3>Карта праздника</h3>
-                <p>Площадки, сцены, маршрут шествия, торговые ряды и парковки.</p>
-                <span className="guide-card__aside">Покажу дорогу</span>
-              </div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="guide-card__figure" src="/decor/guides/map.webp" alt="" aria-hidden />
-            </Link>
+          <div className="fair-pillars">
+            <article><strong>Шествие</strong><span>Каждому году — своя тема, образы и юмор.</span></article>
+            <article><strong>Мастера</strong><span>Ремёсла, ярмарочные ряды и вещи с характером.</span></article>
+            <article><strong>Соседство</strong><span>Четыре народа, много гостей и один общий праздник.</span></article>
           </div>
         </section>
 
         <div className="flourish" aria-hidden />
 
         <section className="section section--tight">
-          <h2>{FEST_CANCELLED ? 'Чем славится ярмарка' : 'Что вас ждёт'}</h2>
-          <div className="section-guide">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/decor/guides/crafts.webp" alt="" aria-hidden />
-            <p className="section-guide__speech">
-              {FEST_CANCELLED
-                ? 'Каждый год — и мастера, и игрушки, и хороводы. Вернёмся к этому, как назначат новую дату.'
-                : 'Тут и мастера, и игрушки, и хороводы! Берите ребятню — каждому найдётся диво.'}
-            </p>
+          <div className="section-heading-row">
+            <div>
+              <p className="eyebrow">Из фотолетописи</p>
+              <h2>Какой мы её помним</h2>
+            </div>
+            <Link className="text-link" href="/years">Вся летопись по годам →</Link>
           </div>
-          <Figure
-            image="mari-ensemble"
-            alt="Фольклорный ансамбль в национальных костюмах"
-            caption="«Этногород»: подворья и костюмы четырёх народов Малмыжа"
-            float
-          />
-          <ul>
-            <li>Карнавальное шествие по теме года — визитная карточка праздника.</li>
-            <li>«Город мастеров» — выставка-конкурс ремёсел со всей округи и из других регионов.</li>
-            <li>«Этногород» — русское, татарское, марийское и удмуртское подворья и национальные кухни.</li>
-            <li>«Куштымаш» — марийский фольклорный праздник в программе.</li>
-            <li>Торговые ряды — наследие престольной ярмарки.</li>
-            <li>Вечерняя программа, ночная дискотека и фейерверк.</li>
-          </ul>
-          <div className="notice">
-            {FEST_CANCELLED ? (
-              <>
-                Так праздник проходит из года в год. В 2026-м он отменён: опубликованная афиша 25 июля не
-                состоится — она сохранена на <Link href="/program">странице программы</Link> как планировавшаяся.
-                Вопросы по участию — по телефонам оргкомитета внизу страницы.
-              </>
-            ) : (
-              <>
-                Официальная афиша 2026 года опубликована — расписание по часам на{' '}
-                <Link href="/program">странице программы</Link>. Хотите участвовать в карнавале или торговле?
-                Телефоны оргкомитета — внизу страницы.
-              </>
-            )}
+          <div className="memory-gallery">
+            {fairMemories.map((memory) => (
+              <figure className="memory-photo" key={memory.image}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={memory.image} alt={memory.alt} />
+                <figcaption>{memory.caption}</figcaption>
+              </figure>
+            ))}
           </div>
+          <p className="memory-note">
+            В 2026 году этих сцен не было. Мы не стираем отмену из истории, но и не остаёмся в ней: храним прошлые годы и ждём, когда ярмарочная улица снова зашумит.
+          </p>
+        </section>
+
+        <div className="flourish" aria-hidden />
+
+        <section className="section section--tight district-section">
+          <p className="eyebrow">Приехать не на час, а на два-три дня</p>
+          <h2>Ярмарка — повод. Малмыжский район — само путешествие.</h2>
+          <p className="lead">
+            Когда появится дата 2027 года, не стоит планировать только день праздника. Дайте себе время пройти по старому центру, зайти в музей, увидеть реку и выехать за город — без гонки по точкам.
+          </p>
+          <div className="district-grid">
+            {districtPlaces.map((place) => (
+              <article className="district-card" key={place.image}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={place.image} alt={place.alt} />
+                <div className="district-card__copy">
+                  <h3>{place.title}</h3>
+                  <p>{place.text}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="section section--tight stay-plan" aria-labelledby="stay-plan-title">
+          <div>
+            <p className="eyebrow">Набросок для будущей поездки</p>
+            <h2 id="stay-plan-title">Как провести три дня</h2>
+          </div>
+          <ol>
+            <li><strong>День первый.</strong> Исторический центр, Богоявленский собор, краеведческий музей и вечерняя прогулка.</li>
+            <li><strong>День второй.</strong> Ярмарка — когда объявят дату: шествие, мастера, подворья, музыка и торговые ряды.</li>
+            <li><strong>День третий.</strong> Выезд к реке или в окрестности. Маршрут, подъезд и доступность мест стоит проверить ближе к поездке.</li>
+          </ol>
+          <p className="stay-plan__source">
+            Малмыжский краеведческий музей проводит городские экскурсионные маршруты и называет среди местных достопримечательностей Богоявленский собор, Болтушину гору, исторический центр и Сибирский тракт.{' '}
+            <a href="https://vyatkamuseums.ru/malmyzh/o-muzee.html">Проверить актуальную информацию музея ↗</a>
+          </p>
         </section>
       </div>
 
-      {/* Полноширинная лента-фон: сцена праздника — логотип на рушниках четырёх народов */}
-      <section className="photoband" style={{ backgroundImage: 'url(/decor/etnogorod-banner.jpg)' }}>
+      <section className="photoband photoband--future" style={{ backgroundImage: 'url(/decor/kurya-backwater.jpg)' }}>
         <div className="photoband__inner">
-          <p className="kicker">Четыре народа — один праздник</p>
-          <h2>Русские · Татары · Марийцы · Удмурты</h2>
+          <p className="kicker">Лето 2027 — в планы</p>
+          <h2>Приезжайте за праздником. Оставайтесь ради Малмыжа.</h2>
           <p>
-            Символ ярмарки — на рушниках четырёх народов Малмыжской земли. В «Этногороде» их подворья, костюмы и кухни
-            встречаются на одной поляне.
+            Новая дата ещё не объявлена. Когда она появится, мы обновим сайт. А пока можно выбрать любимые годы и набросать маршрут будущей поездки.
           </p>
-          <Link className="btn btn--gold" href="/map">
-            Карта праздника →
-          </Link>
+          <div className="photoband__actions">
+            <Link className="btn btn--gold" href="/years">Летопись ярмарок →</Link>
+            <Link className="btn btn--outline-light" href="/gallery">Фотогалерея →</Link>
+          </div>
         </div>
       </section>
     </main>

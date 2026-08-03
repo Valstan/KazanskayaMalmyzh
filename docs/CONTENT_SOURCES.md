@@ -14,6 +14,8 @@
 | Малмыж 1584, Сибирский тракт, ~100 лавок XIX в. | malmyzh.gosuslugi.ru/…/istoriya/ |
 | Четыре народа: русские, татары, марийцы, удмурты | visual-research («Этногород») |
 | Оргкомитет: (83347) 2-22-28 (карнавал), 2-28-83 (торговля) | malmyzh-gazeta.ru id=33002 |
+| Музей проводит экскурсии по городу; местные объекты — Богоявленский собор, Болтушина гора, исторический центр, Сибирский тракт | vyatkamuseums.ru/malmyzh/o-muzee.html; idemvmuzei.ru/catalog/museum/mkuk-malmyzskij-kraevedceskij-muzej |
+| Берег Вятки, затон Курья и Митрофановская церковь — объекты Малмыжского района/Малмыжа | Wikimedia Commons: Category:Malmyzhsky District; Category:Malmyzh; карточки файлов в `web/src/lib/imageCredits.ts` |
 
 ## ⚠️ Не публиковать как факт
 

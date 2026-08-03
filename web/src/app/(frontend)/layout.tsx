@@ -3,7 +3,7 @@ import Link from 'next/link'
 import React from 'react'
 import { Yeseva_One, Nunito_Sans, PT_Sans } from 'next/font/google'
 
-import { SITE_URL, SITE_NAME, FEST_DATE_HUMAN, FEST_CANCELLED, FEST_CANCEL_LEAD, FEST_CANCEL_NOTE } from '../../lib/site'
+import { SITE_URL, SITE_NAME, FEST_DATE_HUMAN, FEST_CANCELLED } from '../../lib/site'
 import { CancelBanner } from './_components/CancelNotice'
 import { Metrika } from './_components/Metrika'
 import { LiveInternet } from './_components/LiveInternet'
@@ -19,9 +19,9 @@ const body = PT_Sans({ subsets: ['cyrillic', 'latin'], weight: ['400', '700'], v
 
 // Пока праздник отменён, титул и описания говорят об этом прямо: выдача
 // поисковиков — первое место, где человек проверяет «а состоится ли».
-const TITLE = FEST_CANCELLED ? `${SITE_NAME} — праздник 25 июля отменён` : `${SITE_NAME} — 25 июля 2026`
+const TITLE = FEST_CANCELLED ? `${SITE_NAME} — вспоминаем ярмарку и ждём 2027 год` : `${SITE_NAME} — 25 июля 2026`
 const DESCRIPTION = FEST_CANCELLED
-  ? `${FEST_CANCEL_LEAD} ${FEST_CANCEL_NOTE} Ярмарка Казанская — главный праздник Малмыжского района: карнавальное шествие, Город мастеров, Этногород, торговые ряды.`
+  ? 'История и фотолетопись Ярмарки Казанской, атмосфера Малмыжа и идеи для поездки на два-три дня. Ждём новостей о празднике 2027 года.'
   : 'Ярмарка Казанская — главный праздник Малмыжского района: карнавальное шествие, Город мастеров, Этногород, торговые ряды. Суббота 25 июля 2026, Малмыж.'
 
 export const metadata: Metadata = {
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: TITLE,
     description: FEST_CANCELLED
-      ? `${FEST_CANCEL_LEAD} ${FEST_CANCEL_NOTE}`
+      ? 'Вспоминаем прошлые ярмарки, открываем Малмыжский район и ждём 2027 год.'
       : 'Карнавальное шествие, Город мастеров, Этногород, торговые ряды и фейерверк. Малмыж, 25 июля 2026.',
     url: SITE_URL,
     locale: 'ru_RU',
@@ -71,8 +71,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <p>
               {FEST_CANCELLED ? (
                 <>
-                  г. Малмыж, Кировская область. Праздник {FEST_DATE_HUMAN} отменён — о новой дате
-                  сообщим здесь.
+                  г. Малмыж, Кировская область. Ярмарка {FEST_DATE_HUMAN} не состоялась;
+                  ждём новостей о 2027 годе.
                 </>
               ) : (
                 <>

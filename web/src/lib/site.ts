@@ -13,10 +13,10 @@ export const FEST_THEME_NOTE = 'к 90-летию Кировской област
 // Тип boolean задан явно: иначе TS сузит константу до литерала `true` и ветки
 // «праздник в силе» станут для него мёртвым кодом (Countdown, live-режим).
 export const FEST_CANCELLED: boolean = true
-export const FEST_CANCEL_TITLE = 'Праздник отменён'
+export const FEST_CANCEL_TITLE = 'Смотрим вперёд — к 2027 году'
 export const FEST_CANCEL_LEAD =
   'Ярмарка Казанская, запланированная на 25 июля 2026 года, не состоится.'
-export const FEST_CANCEL_NOTE = 'О новой дате проведения будет сообщено дополнительно.'
+export const FEST_CANCEL_NOTE = 'Праздник 2026 года не будет перенесён; ждём новостей о Ярмарке 2027 года.'
 export const FEST_CANCEL_ANNOUNCED = '24 июля 2026'
 
 // Каталог сервисов Малмыжа (единая точка входа экосистемы, директива brain от
