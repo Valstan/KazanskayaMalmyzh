@@ -14,10 +14,10 @@ import {
 
 export function CancelBanner() {
   return (
-    <aside className="fest-cancel" role="alert" aria-labelledby="fest-cancel-title">
+    <aside className="fest-cancel" aria-labelledby="fest-cancel-title">
       <div className="wrap fest-cancel__inner">
         <span className="fest-cancel__sign" aria-hidden>
-          !
+          27
         </span>
         <div className="fest-cancel__copy">
           <p className="fest-cancel__title" id="fest-cancel-title">
@@ -26,7 +26,7 @@ export function CancelBanner() {
           <p className="fest-cancel__text">
             {FEST_CANCEL_LEAD} {FEST_CANCEL_NOTE}
           </p>
-          <p className="fest-cancel__meta">Объявлено {FEST_CANCEL_ANNOUNCED}</p>
+          <p className="fest-cancel__meta">Решение о 2026 годе объявлено {FEST_CANCEL_ANNOUNCED}</p>
         </div>
       </div>
     </aside>
