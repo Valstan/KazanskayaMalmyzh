@@ -16,14 +16,15 @@
 
 | Направление | Кто пишет | Где |
 |---|---|---|
-| `brain → KazanskayaMalmyzh` | brain | `brain_matrica/mailboxes/KazanskayaMalmyzh/from-brain/*.md` (мы только **читаем** через `git pull --ff-only`) |
+| `brain → KazanskayaMalmyzh` | brain | `brain_matrica/mailboxes/KazanskayaMalmyzh/from-brain/*.md` (читаем **из GitHub API**, не синхронизируя sibling-репо) |
 | `KazanskayaMalmyzh → brain` | мы | **`mailbox/to-brain/*.md`** в этом репо (коммитим в свой через PR) |
 
 ### Шаги в начале каждой сессии
 
-1. **Sync brain (read-only):** `cd ../brain_matrica && git pull --ff-only && cd -`
-2. **Сканить** `../brain_matrica/mailboxes/KazanskayaMalmyzh/from-brain/*.md` (только корень — не `DRAFTS/`, не `ARCHIVE/`).
-3. **Доложить** пользователю списком `[urgency COMPLIANCE] slug — topic` до чтения `docs/SESSION_HANDOFF.md`.
+1. **Sync только этот репозиторий:** `git fetch`; при чистом tree и отставании — `git checkout main && git pull --ff-only`.
+2. **Сканить входящие через GitHub Contents API:** `gh api repos/Valstan/brain_matrica/contents/mailboxes/KazanskayaMalmyzh/from-brain`. Читать только `.md`-файлы корня, не `DRAFTS/` и не `ARCHIVE/`; содержимое получать тем же API или через `download_url`.
+3. **Не трогать sibling-репозитории:** не выполнять в них `git pull/fetch/status`, не переключать ветки и не менять файлы. Если GitHub API недоступен, можно прочитать локальный mailbox-снимок только как fallback и явно пометить его возможную неактуальность.
+4. **Доложить** пользователю списком `[urgency COMPLIANCE] slug — topic` до чтения `docs/SESSION_HANDOFF.md`.
 
 ### Реакция по compliance
 
@@ -37,9 +38,16 @@
 
 Создать `mailbox/to-brain/YYYY-MM-DD-slug.md` **в этом репо** с frontmatter `from: KazanskayaMalmyzh / to: brain / date / topic / kind (+compliance для idea|directive) / urgency`.
 
-## Тактика напрямую, знание через курацию (ADR-0007)
+## Границы между репозиториями
 
-Sibling-репо читаем **read-only напрямую** (пути `../<clone>/`): опыт Сабантуя — `../SabantuyMalmyzh/` (коллекции, CI, деплой — наш донор), знание мозга — `../brain_matrica/cross-project-ideas/` (GOTCHAS по симптому, pool по номеру). Зависимость от **чужого API/сервиса** — оформлять письмом мозгу, не тихим хардкодом.
+В этой сессии работаем только с `KazanskayaMalmyzh`. Соседние клоны не синхронизируем и не меняем. Исключение — чтение входящей почты brain через GitHub API. Зависимость от **чужого API/сервиса** оформляем письмом brain, не тихим хардкодом.
+
+## Сосуществование агентов (ADR-0011)
+
+- Один агент — одна задача — своя ветка. Параллельные пишущие агенты работают только в отдельных `git worktree`.
+- Незнакомые изменения в дереве считаются чужими: не удалять, не форматировать и не `stash`-ить.
+- Межмодельная память живёт только в Git/PR, `docs/SESSION_HANDOFF.md` и mailbox. Чат одной модели не является источником истины для другой.
+- В памятках `allowed-tools` — только подсказка к инструменту; `/команда` означает «выполни шаги файла». Упомянутый UI-инструмент вроде `AskUserQuestion` можно заменить любой доступной формой вопроса, но сам шаг и ожидание явного ответа обязательны.
 
 ## Правила работы
 
@@ -51,7 +59,7 @@ Sibling-репо читаем **read-only напрямую** (пути `../<clon
 
 ## Скилы сессии (`.claude/commands/`, зеркало для Codex — `.agents/skills/`)
 
-- **`/start`** — старт сессии: синхра репо + brain, mailbox-check, handoff, re-триаж PENDING.
+- **`/start`** — старт сессии: синхра только этого репо, mailbox-check brain через GitHub API, handoff, re-триаж PENDING.
 - **`/close_session`** — финализация: handoff → docs-PR, sync-гейт (всё на origin).
 - **`/obriv`** — восстановление после обрыва связи (ground-truth реконструкция, NUL-чек).
 

@@ -1,12 +1,12 @@
 ---
-description: Старт сессии — синхра репо (#032) + mailbox-check от brain + чтение SESSION_HANDOFF + re-триаж PENDING (#033)
+description: Старт сессии — синхра своего репо + mailbox brain через GitHub API + handoff + re-триаж PENDING
 ---
 
-Выполни старт сессии «Ярмарка Казанская» строго по шагам (детали — в `CLAUDE.md` §📬 Mailbox check). Порядок жёсткий: **сначала синхронизация (шаги 1–2), потом чтение session-памяти (шаги 5–6)** — pool #032.
+Выполни старт сессии «Ярмарка Казанская» строго по шагам (детали — в `AGENTS.md` §📬 Mailbox check). Порядок жёсткий: **сначала синхронизация только текущего репо, затем mailbox через GitHub, потом session-память** — pool #032.
 
 1. **Sync свой репо — ПЕРВЫМ:** `git fetch`; если working tree чист и есть отставание — `git checkout main && git pull --ff-only`. Незакоммиченное / не-ff — сообщи и не форсируй. Только после этого можно доверять `SESSION_HANDOFF`/`PENDING`.
-2. **Sync brain (read-only):** `cd ../brain_matrica && git pull --ff-only && cd -`. Если не ff — сообщи и не форсируй.
-3. **Скан входящих:** прочитай файлы в корне `../brain_matrica/mailboxes/KazanskayaMalmyzh/from-brain/*.md` (НЕ `DRAFTS/`, НЕ `ARCHIVE/`).
+2. **Не трогай sibling-репо:** не запускай в `../brain_matrica` и других клонах ни `git pull/fetch/status`, ни любые записи.
+3. **Скан входящих с GitHub:** через `gh api repos/Valstan/brain_matrica/contents/mailboxes/KazanskayaMalmyzh/from-brain` получи и прочитай `.md`-файлы только из корня (НЕ `DRAFTS/`, НЕ `ARCHIVE/`). Это read-only HTTP/API-операция, она не меняет локальный brain. Если GitHub недоступен, допускается только чтение локального mailbox-снимка с явным предупреждением о возможной неактуальности.
 4. **Доложи** пользователю сводку писем ДО чтения handoff, в формате:
    ```
    📬 N писем от brain_matrica:
