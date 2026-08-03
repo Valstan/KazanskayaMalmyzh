@@ -87,6 +87,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <p className="site-footer__links">
               <Link href="/istochniki-foto">Источники фотографий</Link>
             </p>
+            <p>
+              Разработка —{' '}
+              <a
+                href="https://xn--80adkmnnb2b.xn--80adkdyec4j.xn--p1ai/"
+                rel="author"
+              >
+                Валентин Савиных
+              </a>
+            </p>
             <div className="site-footer__counters" aria-label="Счётчики посещаемости">
               <LiveInternet />
             </div>

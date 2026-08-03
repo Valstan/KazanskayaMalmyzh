@@ -1,6 +1,6 @@
 # SESSION_HANDOFF — sticky-note между сессиями (pool #003)
 
-**Обновлено:** 2026-07-30 (сессия 9: три письма brain отработаны — каталог сервисов, G203, ревизия гейтов #104)
+**Обновлено:** 2026-08-03 (сессия 10: безопасный `/start`, ADR-0011, подпись автора, проверки Payload G211/G223)
 
 ## TL;DR для следующей сессии
 
@@ -89,6 +89,14 @@
 - SSH к боксу с dev-машины опять в просадке (`banner exchange`), HTTP наружу глушится DPI. Рабочий обход — **`ssh -o ProxyJump=GONBA sabantuy '<команда>'`**: короткая форма через алиасы `~/.ssh/config`, разворачивать ProxyCommand с явными ключами (как записано в handoff сессии 8) не нужно.
 - **Проверять надо и то, что стоит над гейтами.** Флаг «защита ветки включена» — такое же утверждение, требующее показанного красного, как и `lint`: при `enforce_admins: false` push админа проходит, лишь печатая «Bypassed rule violations».
 - **PowerShell не годится для правки YAML и любых файлов с кириллицей**: `Set-Content -Encoding utf8` в 5.1 добавляет BOM (GitHub перестаёт видеть `workflow_dispatch`), а `Get-Content`+`Set-Content` перекодирует русский текст в mojibake. Править только Edit/Write.
+
+## Сделано в сессии 10 (2026-08-03)
+
+- `/start` в `.claude/commands/` и `.agents/skills/` больше не синхронизирует sibling-репо: обновляется только `KazanskayaMalmyzh`, mailbox brain читается read-only через GitHub Contents API. Локальный brain-mailbox — только fallback с предупреждением о возможной неактуальности.
+- ADR-0011 применён: `AGENTS.md` — канон; `CLAUDE.md`/`GEMINI.md` — тонкие адаптеры; добавлены правила сосуществования агентов и tool-local `.gitignore`.
+- В footer добавлена подпись «Разработка — Валентин Савиных» с `rel="author"` и punycode-ссылкой на портфолио.
+- Payload G211/G223 проверены: `create`-гейты возвращают boolean; в tracked-коде нет `payload.create/update` и `draft: false`. Правка не нужна.
+- Ответы brain — `mailbox/to-brain/2026-08-03-*.md`.
 
 ## Следующая сессия
 

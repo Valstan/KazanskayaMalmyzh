@@ -6,4 +6,4 @@
 - **Стек:** Next.js 15 + Payload CMS 3 + PostgreSQL (модель проекта [Сабантуй Малмыж](https://github.com/Valstan/SabantuyMalmyzh))
 - **Управление:** meta-репо [brain_matrica](https://github.com/Valstan/brain_matrica) — kickoff-план в `docs/plans/kazanskaya-kickoff.md`
 
-Для AI-сессий: начинать с [CLAUDE.md](CLAUDE.md).
+Для AI-сессий: начинать с [AGENTS.md](AGENTS.md).
