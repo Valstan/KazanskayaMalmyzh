@@ -13,6 +13,7 @@ import { SERVICES_CATALOG_URL } from '../../../lib/site'
 const NAV = [
   { href: '/', label: 'Главная' },
   { href: '/program', label: 'Программа' },
+  { href: '/news', label: 'Новости' },
   { href: '/history', label: 'История' },
   { href: '/years', label: 'Как это было' },
   { href: '/map', label: 'Карта' },
