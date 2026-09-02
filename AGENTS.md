@@ -93,3 +93,5 @@
 ## Режим сайта
 
 Флаг `FEST_CANCELLED` в `web/src/lib/site.ts` гасит обратный отсчёт и live-режим `/program`, включает полосу-алерт и переводит JSON-LD в `EventCancelled`; дата праздника — `FEST_DATE_*` там же. Тесты `seo.test.ts` держат обе ветки флага. Текущий статус праздника и вехи — только в `docs/SESSION_HANDOFF.md`.
+
+**Возврат праздника, когда владелец назовёт дату:** `FEST_DATE_ISO`/`FEST_DATE_HUMAN` (+ тема в `FEST_THEME*` и в `lib/years.ts`), `FEST_CANCELLED = false`; афишу занести в Events под новую дату; проверить на проде возврат отсчёта на главной, live-режима `/program` и `EventScheduled` в JSON-LD. Тексты «в прошедшем времени» на главной, `/program` и `/map` вернутся сами — они под тем же флагом.
