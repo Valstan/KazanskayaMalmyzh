@@ -70,6 +70,7 @@ export interface Config {
     pages: Page;
     events: Event;
     gallery: Gallery;
+    posts: Post;
     media: Media;
     users: User;
     'payload-kv': PayloadKv;
@@ -82,6 +83,7 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
     gallery: GallerySelect<false> | GallerySelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -279,6 +281,61 @@ export interface Gallery {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  title: string;
+  /**
+   * Дата в ленте. Пусто — берётся дата публикации.
+   */
+  date?: string | null;
+  /**
+   * Конвейер проставляет догадку; поле принадлежит редактору.
+   */
+  rubric?: ('festival' | 'prep' | 'crafts' | 'culture' | 'history' | 'other') | null;
+  /**
+   * Одна-две фразы для ленты. Пусто — берётся начало текста.
+   */
+  summary?: string | null;
+  cover?: (number | null) | Media;
+  /**
+   * Конвейер перекладывает фото из ВК к нам (ВК-CDN протухает).
+   */
+  gallery?: (number | Media)[] | null;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  publishedAt?: string | null;
+  /**
+   * Заполняется автоматически из заголовка. Можно переопределить вручную.
+   */
+  slug?: string | null;
+  source?: {
+    /**
+     * Ключ идемпотентности приёмника — повторная доставка не создаёт дубль.
+     */
+    vkPostId?: string | null;
+    sourceUrl?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
@@ -339,6 +396,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'gallery';
         value: number | Gallery;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: number | Post;
       } | null)
     | ({
         relationTo: 'media';
@@ -450,6 +511,30 @@ export interface GallerySelect<T extends boolean = true> {
       };
   publishedAt?: T;
   slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  date?: T;
+  rubric?: T;
+  summary?: T;
+  cover?: T;
+  gallery?: T;
+  content?: T;
+  publishedAt?: T;
+  slug?: T;
+  source?:
+    | T
+    | {
+        vkPostId?: T;
+        sourceUrl?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

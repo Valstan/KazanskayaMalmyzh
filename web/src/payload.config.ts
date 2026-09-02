@@ -9,6 +9,7 @@ import { Pages } from './collections/Pages'
 import { Events } from './collections/Events'
 import { Gallery } from './collections/Gallery'
 import { Media } from './collections/Media'
+import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { FestivalMap } from './globals/FestivalMap'
 
@@ -34,7 +35,7 @@ export default buildConfig({
     // вручную на этапе деплоя (паттерн Sabantuy, #017).
     push: true,
   }),
-  collections: [Pages, Events, Gallery, Media, Users],
+  collections: [Pages, Events, Gallery, Posts, Media, Users],
   globals: [FestivalMap],
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''].filter(Boolean),
   secret: process.env.PAYLOAD_SECRET || '',
