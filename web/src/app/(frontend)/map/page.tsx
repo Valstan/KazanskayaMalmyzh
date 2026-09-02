@@ -4,8 +4,10 @@ import { getPayload } from 'payload'
 
 import config from '@payload-config'
 import { FEST_CANCELLED, FEST_CANCEL_LEAD, FEST_CANCEL_NOTE } from '../../../lib/site'
+import { compareVenueItems, venueIconFor, type VenueIconKey, type VenueItem } from '../../../lib/venues'
 import { CancelPlate } from '../_components/CancelNotice'
 import { Hero } from '../_components/Hero'
+import { VenueIcon } from '../_components/VenueIcon'
 
 // Площадки и глобал festival-map читаются из БД — пререндер на пустой базе CI
 // дал бы «расписание по площадкам временно недоступно» до первой ревалидации (G203).
@@ -34,11 +36,12 @@ const fmtTime = new Intl.DateTimeFormat('ru-RU', {
   timeZone: 'Europe/Moscow',
 })
 
-type VenueGroup = { name: string; items: { time: string; title: string }[] }
+type VenueGroup = { name: string; icon: VenueIconKey | null; items: (VenueItem & { time: string })[] }
 
 // Площадки собираются из официальной афиши (опубликованные Events): группируем по
-// location, порядок групп — по времени первого события. Схемы территории от
-// оргкомитета в 2026 году нет, поэтому «карта» = где что происходит и когда.
+// location, порядок групп — по времени первого события, события внутри площадки —
+// по compareVenueItems (равное начало: точечное перед длящимся). Схемы территории
+// от оргкомитета в 2026 году нет, поэтому «карта» = где что происходит и когда.
 function groupByVenue(
   events: {
     title: string
@@ -54,10 +57,13 @@ function groupByVenue(
     if (!name) continue
     const start = new Date(e.startDate)
     if (Number.isNaN(start.getTime())) continue
-    const time = e.endDate ? `${fmtTime.format(start)}–${fmtTime.format(new Date(e.endDate))}` : fmtTime.format(start)
-    if (!groups.has(name)) groups.set(name, { name, items: [] })
-    groups.get(name)!.items.push({ time, title: e.title })
+    const endDate = e.endDate ? new Date(e.endDate) : null
+    const end = endDate && !Number.isNaN(endDate.getTime()) ? endDate.getTime() : null
+    const time = end !== null ? `${fmtTime.format(start)}–${fmtTime.format(end)}` : fmtTime.format(start)
+    if (!groups.has(name)) groups.set(name, { name, icon: venueIconFor(name), items: [] })
+    groups.get(name)!.items.push({ time, title: e.title, start: start.getTime(), end })
   }
+  for (const g of groups.values()) g.items.sort(compareVenueItems)
   return [...groups.values()]
 }
 
@@ -136,7 +142,10 @@ export default async function MapPage() {
               <div className="venues">
                 {venues.map((v) => (
                   <div className="venue" key={v.name}>
-                    <h3>{v.name}</h3>
+                    <h3 className="venue__title">
+                      {v.icon ? <VenueIcon kind={v.icon} className="venue__icon" /> : null}
+                      <span>{v.name}</span>
+                    </h3>
                     <ul className="venue__list">
                       {v.items.map((it, i) => (
                         <li key={i}>
