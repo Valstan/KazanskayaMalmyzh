@@ -1,13 +1,22 @@
 name: Deploy to production
 
-# Сборка едет в CI (ubuntu): прод-VPS (Бокс Sabantuy, 1.5 GiB без swap, второй жилец)
-# не тянет next build (G20). На сервер по SSH кладём standalone-артефакт и рестартим
-# systemd-сервис kazanskaya. Харвест deploy-prod.yml Сабантуя (ADR-0007).
+# Сборка едет в CI (ubuntu): прод-бокс swapless и не тянет next build (G20).
+# На сервер по SSH кладём standalone-артефакт и рестартим systemd-сервис
+# kazanskaya. Харвест deploy-prod.yml Сабантуя (ADR-0007).
+#
+# Репозиторий и логи прогонов публичны (D-038, #223): всё, что описывает бокс,
+# живёт в secrets — раннер маскирует только их, значения vars печатаются в лог
+# раскрытыми (в том числе в блоке env: шага).
 #
 # Требуется:
-#   secrets.SSH_PRIVATE_KEY        — приватная часть ИЗОЛИРОВАННОГО ключа id_ed25519_kazanskaya (#001, НЕ сабантуевский)
-#   vars.DEPLOY_SSH_HOST           — <hex>.vps.myjino.ru (myjino ротирует — потому в vars)
-#   vars.DEPLOY_SSH_PORT           — внешний порт (G8: внешний ≠ внутренний 22)
+#   secrets.SSH_PRIVATE_KEY        — приватная часть ИЗОЛИРОВАННОГО деплой-ключа проекта (#001)
+#   secrets.DEPLOY_SSH_HOST        — хостнейм бокса (хостер ротирует — правится в секрете, не в файле)
+#   secrets.DEPLOY_SSH_USER        — пользователь на боксе
+#   secrets.DEPLOY_SSH_KNOWN_HOSTS — строка known_hosts «[host]:port ssh-ed25519 …» (снята
+#                                    с доверенной машины; без ssh-keyscan ключ хоста не принимается вслепую)
+#   vars.DEPLOY_SSH_PORT           — внешний порт (G8: внешний ≠ внутренний 22). Осознанно в vars:
+#                                    маскировщик замазывает каждое вхождение значения, короткое число
+#                                    испортило бы весь лог (#265)
 #   vars.NEXT_PUBLIC_SERVER_URL    — боевой домен, строго punycode (G133/G134):
 #                                    https://xn--80aaa0andu6a3j.xn--80adkdyec4j.xn--p1ai
 
@@ -116,28 +125,35 @@ jobs:
       - name: Setup SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          DEPLOY_SSH_HOST: ${{ vars.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
           DEPLOY_SSH_PORT: ${{ vars.DEPLOY_SSH_PORT }}
         run: |
           set -e
-          if [ -z "$SSH_PRIVATE_KEY" ] || [ -z "$DEPLOY_SSH_HOST" ] || [ -z "$DEPLOY_SSH_PORT" ]; then
-            echo "::error::Заданы не все: secrets.SSH_PRIVATE_KEY / vars.DEPLOY_SSH_HOST / vars.DEPLOY_SSH_PORT"
-            exit 1
-          fi
+          for v in SSH_PRIVATE_KEY DEPLOY_SSH_HOST DEPLOY_SSH_USER DEPLOY_SSH_KNOWN_HOSTS DEPLOY_SSH_PORT; do
+            if [ -z "${!v}" ]; then
+              echo "::error::Не задано: $v (secrets.SSH_PRIVATE_KEY / DEPLOY_SSH_HOST / DEPLOY_SSH_USER / DEPLOY_SSH_KNOWN_HOSTS, vars.DEPLOY_SSH_PORT)"
+              exit 1
+            fi
+          done
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519_kazanskaya
           chmod 600 ~/.ssh/id_ed25519_kazanskaya
-          ssh-keyscan -p "$DEPLOY_SSH_PORT" -H "$DEPLOY_SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
-          cat > ~/.ssh/config <<CFG
-          Host kazanskaya
-            HostName $DEPLOY_SSH_HOST
-            Port $DEPLOY_SSH_PORT
-            User valstan
-            IdentityFile ~/.ssh/id_ed25519_kazanskaya
-            IdentitiesOnly yes
-            StrictHostKeyChecking accept-new
-            ServerAliveInterval 30
-          CFG
+          # Ключ хоста — фиксированная запись из секрета, проверка строгая: подмена
+          # сервера роняет шаг, а не проходит через accept-new/keyscan.
+          printf '%s\n' "$DEPLOY_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          {
+            echo "Host kazanskaya"
+            echo "  HostName $DEPLOY_SSH_HOST"
+            echo "  Port $DEPLOY_SSH_PORT"
+            echo "  User $DEPLOY_SSH_USER"
+            echo "  IdentityFile ~/.ssh/id_ed25519_kazanskaya"
+            echo "  IdentitiesOnly yes"
+            echo "  StrictHostKeyChecking yes"
+            echo "  ServerAliveInterval 30"
+          } > ~/.ssh/config
           chmod 600 ~/.ssh/config
 
       - name: Ship artifact + restart
@@ -147,7 +163,7 @@ jobs:
           ssh kazanskaya 'bash -s' "${{ github.sha }}" <<'REMOTE'
           set -e
           SHA="$1"
-          BASE=/home/valstan/kazanskaya
+          BASE="$HOME/kazanskaya"
           REL="$BASE/releases/$SHA"
           rm -rf "$REL"; mkdir -p "$REL"
           tar xzf /tmp/kazanskaya-app.tgz -C "$REL"
@@ -220,8 +236,27 @@ jobs:
           exit $fail
           REMOTE
 
-      - name: On failure — журналы прода
+      # Диагностика при падении — урезанная, не дамп (#265, G290): systemctl status
+      # печатает путь юнита и хвост журнала с хостнеймом в каждой строке, а
+      # маскировка secrets ловит только точное значение целиком — короткий
+      # хостнейм, /home/<user> и user:pass@host внутри URL ошибки БД утекают.
+      # Поэтому: именованные поля юнита + журнал без префиксов + редакция
+      # производных форм на выходе.
+      - name: On failure — состояние юнита (урезанный вывод)
         if: failure()
         run: |
-          ssh kazanskaya "sudo systemctl status kazanskaya --no-pager -l" 2>&1 || true
-          ssh kazanskaya "sudo journalctl -u kazanskaya -n 80 --no-pager" 2>&1 || true
+          ssh kazanskaya 'bash -s' <<'REMOTE' 2>&1 || true
+          set +e
+          H="$(hostname -s)"
+          U="$(id -un)"
+          redact() {
+            sed -E \
+              -e "s#/home/$U#/home/[user]#g" \
+              -e "s#([a-z][a-z0-9+.-]*://)[^@/[:space:]]+@#\1***:***@#g" \
+              -e "s#$H#[host]#g"
+          }
+          echo "== systemctl show kazanskaya =="
+          sudo systemctl show kazanskaya -p ActiveState -p SubState -p Result -p ExecMainStatus -p NRestarts | redact
+          echo "== journalctl -u kazanskaya (last 60, no prefixes) =="
+          sudo journalctl -u kazanskaya -n 60 --no-pager -o cat | redact
+          REMOTE

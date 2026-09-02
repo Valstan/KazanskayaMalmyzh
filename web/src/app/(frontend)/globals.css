@@ -938,5 +938,5 @@ main li { margin-bottom: 0.25rem; }
 .site-footer a { color: var(--c-accent-hover); }
 .site-footer__links { margin-top: 0.8rem; }
 .site-footer__counters { margin-top: 1rem; display: flex; justify-content: center; }
-.li-counter { display: inline-block; line-height: 0; opacity: 0.9; }
-.li-counter:hover { opacity: 1; }
+.ym-informer { display: inline-block; line-height: 0; opacity: 0.9; }
+.ym-informer:hover { opacity: 1; }
