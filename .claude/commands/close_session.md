@@ -49,12 +49,15 @@ gh pr list --state open
 
 ## Шаг 6. Handoff через docs-PR
 
+Текст коммита и тела PR — **файлом**, не аргументом (D-046: кириллица и переносы строк в `-m`/`--body` ломаются на слоях экранирования). Записать `msg.txt` и `pr-body.md` инструментом записи файлов в scratchpad, затем:
+
 ```bash
 git checkout -b docs/handoff-<slug>
 git add docs/
-git commit -m "docs: handoff — <резюме>"
+git commit -F <scratchpad>/msg.txt
 git push -u origin docs/handoff-<slug>
-gh pr create ... && gh pr merge --squash
+gh pr create --title "docs: handoff" --body-file <scratchpad>/pr-body.md
+gh pr merge --squash --delete-branch
 git checkout main && git pull --ff-only
 ```
 
@@ -64,8 +67,9 @@ git checkout main && git pull --ff-only
 git status --short                 # пусто
 git rev-parse HEAD @{u}            # совпадают
 gh pr list --state open            # перечислить
-cd ../brain_matrica && git status --short && cd -   # чисто
 ```
+
+Sibling-репо (`../brain_matrica` и др.) не проверяем и не трогаем — см. AGENTS.md §Границы.
 
 ## Шаг 8. Отчёт пользователю
 

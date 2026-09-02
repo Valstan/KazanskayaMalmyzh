@@ -6,7 +6,7 @@ import { Yeseva_One, Nunito_Sans, PT_Sans } from 'next/font/google'
 import { SITE_URL, SITE_NAME, FEST_DATE_HUMAN, FEST_CANCELLED } from '../../lib/site'
 import { CancelBanner } from './_components/CancelNotice'
 import { Metrika } from './_components/Metrika'
-import { LiveInternet } from './_components/LiveInternet'
+import { MetrikaInformer } from './_components/MetrikaInformer'
 import { SiteNav } from './_components/SiteNav'
 import './globals.css'
 import './festive.css'
@@ -96,8 +96,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 Валентин Савиных
               </a>
             </p>
-            <div className="site-footer__counters" aria-label="Счётчики посещаемости">
-              <LiveInternet />
+            <div className="site-footer__counters" aria-label="Посещаемость сайта">
+              <MetrikaInformer />
             </div>
           </div>
         </footer>
