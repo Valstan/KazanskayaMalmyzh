@@ -972,6 +972,8 @@ main li { margin-bottom: 0.25rem; }
 @media (max-width: 640px) {
   .post-card { grid-template-columns: minmax(0, 1fr); }
   .post-card__body { padding: 0.9rem 1.1rem 1rem; }
+}
+
 /* ---------- Галерея историями (спека §Галерея: событие, не год) ---------- */
 .story-nav { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
 .story-nav a {
