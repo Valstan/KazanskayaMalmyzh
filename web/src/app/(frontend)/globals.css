@@ -578,6 +578,9 @@ main li { margin-bottom: 0.25rem; }
   box-shadow: var(--shadow-card);
 }
 .venue h3 { margin-bottom: 0.5rem; color: var(--c-primary); }
+/* Пиктограмма площадки (спека §3): силуэт 28px в цвет заголовка. */
+.venue__title { display: flex; align-items: center; gap: 0.55rem; }
+.venue__icon { width: 28px; height: 28px; flex: none; color: var(--c-primary-dark); }
 .venue__list { list-style: none; margin: 0; padding: 0; }
 .venue__list li {
   padding: 0.35rem 0;
@@ -912,6 +915,47 @@ main li { margin-bottom: 0.25rem; }
   font-size: 0.78rem;
   color: #fff;
   background: linear-gradient(180deg, transparent, rgba(44, 20, 14, 0.82));
+}
+
+/* ---------- Галерея историями (спека §Галерея: событие, не год) ---------- */
+.story-nav { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+.story-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  background: var(--c-surface);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+.story-nav__count {
+  font-size: 0.78rem;
+  color: var(--c-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.story { scroll-margin-top: 90px; }
+.story__title { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+.story__count { font-family: var(--font-body-f); font-size: 0.9rem; font-weight: 400; color: var(--c-text-muted); }
+.story__lead { max-width: 60ch; color: var(--c-text-muted); }
+.story__grid { grid-auto-flow: dense; }
+.photo-grid__item--lead { grid-column: span 2; grid-row: span 2; }
+.photo-grid__year {
+  display: inline-block;
+  padding: 0 0.35rem;
+  margin-right: 0.25rem;
+  border-radius: 4px;
+  background: var(--c-accent);
+  color: #2c140e;
+  font-weight: 800;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+.story__credits { font-size: 0.86rem; margin-top: 0.6rem; }
+@media (max-width: 560px) {
+  .photo-grid__item--lead { grid-column: span 1; grid-row: span 1; }
 }
 
 /* ---------- Реестр источников ---------- */
