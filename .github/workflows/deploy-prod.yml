@@ -307,7 +307,7 @@ jobs:
             exit 0
           fi
           echo "::add-mask::$TOKEN"
-          trap 'curl -sf -X DELETE "$VAULT/session" -H "Authorization: Bearer $TOKEN" >/dev/null 2>&1 || true; rm -f /tmp/vault-mirror.json /tmp/vault-grant.json' EXIT
+          trap 'curl -sf -X DELETE "$VAULT/session" -H "Authorization: Bearer $TOKEN" >/dev/null 2>&1 || true; rm -f /tmp/vault-mirror.json /tmp/vault-grant.json /tmp/vault-grants.json /tmp/vault-grant-out.txt' EXIT
           echo "сессия открыта: 201"
 
           if [ "$(printf '%s' "$SESSION" | jq -r '.canWrite // false')" != "true" ]; then
@@ -332,7 +332,9 @@ jobs:
           # 4. Grant kazanskayamalmyzh → setka на ОДИН ключ шлюза (письмо brain 03.09).
           #    INGEST_PUBLISH_KEY не grant'им никогда: draft остаётся по построению (#124).
           #    Идемпотентность на нашей стороне — повторный прогон не выдаёт второй grant.
-          GRANTS="$(curl -sf "$VAULT/grants" -H "Authorization: Bearer $TOKEN" || true)"
+          GCODE="$(curl -s -o /tmp/vault-grants.json -w '%{http_code}' "$VAULT/grants" -H "Authorization: Bearer $TOKEN" || true)"
+          echo "GET /grants: $GCODE"
+          GRANTS="$(cat /tmp/vault-grants.json 2>/dev/null || true)"
           HAVE="$(printf '%s' "$GRANTS" | jq -r '
             (if type == "array" then . else (.grants // .items // .data // []) end)
             | map(select(((.key // .secret_key // "") == "INGEST_GATEWAY_KEY")
@@ -355,7 +357,12 @@ jobs:
           case "$CODE" in
             200|201) echo "grant → setka: $CODE (alias KAZANSKAYA_INGEST_KEY)" ;;
             409)     echo "grant → setka: 409, уже существует — идемпотентно" ;;
-            *)       echo "::warning::grant → setka не выдан: HTTP $CODE"; exit 0 ;;
+            *)       echo "::warning::grant → setka не выдан: HTTP $CODE"
+                     # Тело ответа — сообщение КАРМАНа об отказе, секретов в нём нет.
+                     # Без него 403 неотличим от «нет права» / «нет такой комнаты» /
+                     # «поле названо иначе» (#110: «отправлено ≠ доставлено»).
+                     echo "ответ КАРМАНа: $(head -c 500 /tmp/vault-grant-out.txt 2>/dev/null)"
+                     exit 0 ;;
           esac
 
       # Диагностика при падении — урезанная, не дамп (#265, G290): systemctl status
