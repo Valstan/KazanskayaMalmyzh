@@ -1,7 +1,7 @@
 import {
   SITE_URL,
   SITE_NAME,
-  FEST_DATE_HUMAN,
+  FEST_DATE_HUMAN_PREP,
   FEST_THEME,
   FEST_CANCELLED,
   FEST_CANCEL_LEAD,
@@ -19,7 +19,7 @@ export function GET(): Response {
     ? `> ТЕКУЩИЙ СТАТУС: ${FEST_CANCEL_LEAD} ${FEST_CANCEL_NOTE}
 > Решение о 2026 годе объявлено ${FEST_CANCEL_ANNOUNCED}. Дата ярмарки 2027 года пока не объявлена.
 > Главная страница сейчас посвящена памяти о прошлых ярмарках и поездке в Малмыжский район.`
-    : `> Праздник пройдёт в ${FEST_DATE_HUMAN}. Тема карнавального
+    : `> Праздник пройдёт ${FEST_DATE_HUMAN_PREP}. Тема карнавального
 > шествия 2026 года — ${FEST_THEME}, к 90-летию Кировской области.`
 
   const body = `# ${SITE_NAME}
