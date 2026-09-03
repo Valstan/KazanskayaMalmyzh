@@ -19,6 +19,10 @@ name: Deploy to production
 #                                    испортило бы весь лог (#265)
 #   vars.NEXT_PUBLIC_SERVER_URL    — боевой домен, строго punycode (G133/G134):
 #                                    https://xn--80aaa0andu6a3j.xn--80adkdyec4j.xn--p1ai
+#   secrets.SECRETS_VAULT_URL      — база API КАРМАНа (…/api/secrets). В secrets, а не в
+#                                    vars: это адрес бокса, то есть recon-поле (D-038)
+#   secrets.INGEST_GATEWAY_KEY     — ключ нашего приёмника /api/ingest/posts; зеркалится
+#   secrets.INGEST_PUBLISH_KEY     — ключ публикации; зеркалится, но НЕ grant'ится наружу
 
 on:
   push:
@@ -31,6 +35,13 @@ on:
       - '.github/**'
       - '.claude/**'
   workflow_dispatch:
+
+permissions:
+  contents: read
+  # Паспортный путь ADR-0012 (D-061): шаг предъявляет КАРМАНу подписанное
+  # удостоверение прогона и получает сессионный токен своей комнаты сам.
+  # Без этого права ACTIONS_ID_TOKEN_REQUEST_* в шаге не появятся вовсе.
+  id-token: write
 
 concurrency:
   group: deploy-prod
@@ -235,6 +246,117 @@ jobs:
           absent "/map"     "по площадкам временно недоступно" "площадки недоступны"
           exit $fail
           REMOTE
+
+      # Зеркало секретов в свою комнату КАРМАНа + выдача grant'а Сарафану.
+      # ADR-0006 (обязанность зеркалить) + ADR-0012 (паспорт) + D-061 (маршрут
+      # ключа приёмника без рук владельца; письма brain 02.09 и 03.09).
+      #
+      # Токен комнаты не хранится НИГДЕ: шаг предъявляет КАРМАНу OIDC-удостоверение
+      # прогона и получает сессионный токен на 60 минут. Три условия КАРМАНа:
+      # audience ровно `karman-vault`, прогон с refs/heads/main, самоотзыв сессии.
+      #
+      # ⚠️ На PR-прогоне удостоверение приходит с `ref:refs/pull/…`, subject_pattern
+      # его не пропускает — это 401 ПО ПОСТРОЕНИЮ, а не дефект (письмо КАРМАНа
+      # через brain 03.09, passport_identity id 4). Поэтому шаг не блокирующий, а
+      # приёмка возможна только по прогону из main после мержа.
+      #
+      # ⚠️ Токен приходит ОТВЕТОМ, а не из `secrets` — автоматической маскировки
+      # для него не существует, `::add-mask::` ставим руками до первого использования.
+      # ⚠️ trap … EXIT ровно ОДИН: второй молча заменил бы первый и самоотзыв
+      # сессии исчез бы. Уборка временных файлов входит в тот же единственный trap.
+      - name: Зеркало секретов в комнату КАРМАНа + grant → setka
+        if: success()
+        continue-on-error: true
+        env:
+          VAULT: ${{ secrets.SECRETS_VAULT_URL }}
+          INGEST_GATEWAY_KEY: ${{ secrets.INGEST_GATEWAY_KEY }}
+          INGEST_PUBLISH_KEY: ${{ secrets.INGEST_PUBLISH_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${VAULT:-}" ]; then
+            echo "::warning::secrets.SECRETS_VAULT_URL не задан — зеркалирование пропущено"
+            exit 0
+          fi
+          if [ -z "${INGEST_GATEWAY_KEY:-}" ]; then
+            echo "::warning::secrets.INGEST_GATEWAY_KEY не задан — зеркалировать нечего"
+            exit 0
+          fi
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            echo "::warning::OIDC недоступен (нужно permissions: id-token: write) — зеркалирование пропущено"
+            exit 0
+          fi
+
+          # 1. Удостоверение прогона. audience — РОВНО эта строка, иначе 401 без пояснений.
+          ASSERTION="$(curl -sf -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=karman-vault" | jq -r '.value // empty')"
+          if [ -z "$ASSERTION" ]; then
+            echo "::warning::удостоверение прогона не выдано — зеркалирование пропущено"
+            exit 0
+          fi
+          echo "::add-mask::$ASSERTION"
+
+          # 2. Обмен удостоверения на сессионный токен комнаты (TTL 60 мин).
+          #    Постоянного secrets.SECRETS_TOKEN нет и быть не должно: положить туда
+          #    сессионный токен = положить значение, которое протухнет через час,
+          #    оставаясь на вид рабочим.
+          SESSION="$(curl -sf -X POST "$VAULT/session" -H "Authorization: Bearer $ASSERTION" || true)"
+          TOKEN="$(printf '%s' "$SESSION" | jq -r '.token // empty' 2>/dev/null || true)"
+          if [ -z "$TOKEN" ]; then
+            echo "::warning::сессия не открыта (на PR-прогоне это 401 по построению) — шаг пропущен"
+            exit 0
+          fi
+          echo "::add-mask::$TOKEN"
+          trap 'curl -sf -X DELETE "$VAULT/session" -H "Authorization: Bearer $TOKEN" >/dev/null 2>&1 || true; rm -f /tmp/vault-mirror.json /tmp/vault-grant.json' EXIT
+          echo "сессия открыта: 201"
+
+          if [ "$(printf '%s' "$SESSION" | jq -r '.canWrite // false')" != "true" ]; then
+            echo "::warning::сессия без права записи — зеркалирование пропущено"
+            exit 0
+          fi
+
+          # 3. Значения — в комнату. Через --arg, не подстановкой в строку JSON:
+          #    спецсимволы в секретах не ломают документ и не утекают в лог.
+          #    INGEST_PUBLISH_KEY зеркалим (ADR-0006), но наружу не отдаём — см. п.4.
+          jq -n \
+            --arg gw "$INGEST_GATEWAY_KEY" \
+            --arg pub "${INGEST_PUBLISH_KEY:-}" \
+            '{secrets: ({INGEST_GATEWAY_KEY:$gw} + (if $pub == "" then {} else {INGEST_PUBLISH_KEY:$pub} end))}' \
+            > /tmp/vault-mirror.json
+          curl -sf -X POST "$VAULT" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data @/tmp/vault-mirror.json > /dev/null
+          echo "значение INGEST_GATEWAY_KEY в комнате kazanskayamalmyzh"
+
+          # 4. Grant kazanskayamalmyzh → setka на ОДИН ключ шлюза (письмо brain 03.09).
+          #    INGEST_PUBLISH_KEY не grant'им никогда: draft остаётся по построению (#124).
+          #    Идемпотентность на нашей стороне — повторный прогон не выдаёт второй grant.
+          GRANTS="$(curl -sf "$VAULT/grants" -H "Authorization: Bearer $TOKEN" || true)"
+          HAVE="$(printf '%s' "$GRANTS" | jq -r '
+            (if type == "array" then . else (.grants // .items // .data // []) end)
+            | map(select(((.key // .secret_key // "") == "INGEST_GATEWAY_KEY")
+                     and ((.target_slug // .target // .to // "") == "setka")))
+            | length' 2>/dev/null || echo 0)"
+          if [ "${HAVE:-0}" != "0" ]; then
+            echo "grant → setka уже выдан ранее — повторно не выдаём"
+            exit 0
+          fi
+
+          # note обязателен валидацией: он попадает в аудит обеих комнат
+          # (grant_out/grant_in) как основание выдачи.
+          jq -n '{key:"INGEST_GATEWAY_KEY", target_slug:"setka",
+                  alias:"KAZANSKAYA_INGEST_KEY", note:"D-015/D-061, brain 2026-09-02"}' \
+            > /tmp/vault-grant.json
+          CODE="$(curl -s -o /tmp/vault-grant-out.txt -w '%{http_code}' -X POST "$VAULT/grants" \
+            -H "Authorization: Bearer $TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data @/tmp/vault-grant.json)"
+          case "$CODE" in
+            200|201) echo "grant → setka: $CODE (alias KAZANSKAYA_INGEST_KEY)" ;;
+            409)     echo "grant → setka: 409, уже существует — идемпотентно" ;;
+            *)       echo "::warning::grant → setka не выдан: HTTP $CODE"; exit 0 ;;
+          esac
 
       # Диагностика при падении — урезанная, не дамп (#265, G290): systemctl status
       # печатает путь юнита и хвост журнала с хостнеймом в каждой строке, а
