@@ -1037,7 +1037,15 @@ main li { margin-bottom: 0.25rem; }
 }
 .site-footer p { margin: 0.25rem 0; opacity: 0.9; }
 .site-footer a { color: var(--c-accent-hover); }
-.site-footer__links { margin-top: 0.8rem; }
+/* Ссылок в подвале стало две (источники фото + конфиденциальность): без
+   явного зазора они слипаются в одну строку, на узком экране — переносятся. */
+.site-footer__links {
+  margin-top: 0.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem 1.2rem;
+}
 .site-footer__counters { margin-top: 1rem; display: flex; justify-content: center; }
 .ym-informer { display: inline-block; line-height: 0; opacity: 0.9; }
 .ym-informer:hover { opacity: 1; }

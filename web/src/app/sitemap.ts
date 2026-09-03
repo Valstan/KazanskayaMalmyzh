@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/years',
     '/map',
     '/gallery',
+    '/privacy',
     ...yearsWithPage().map((y) => `/years/${y}`),
   ]
   return paths.map((path) => ({

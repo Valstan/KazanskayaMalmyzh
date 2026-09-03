@@ -725,6 +725,10 @@
   --section-mark: '✦';
 }
 
+.page--privacy {
+  --section-mark: '◈';
+}
+
 .page--inner h2::before {
   content: var(--section-mark, '❦') ' ';
 }

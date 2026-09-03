@@ -86,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </p>
             <p className="site-footer__links">
               <Link href="/istochniki-foto">Источники фотографий</Link>
+              <Link href="/privacy">Конфиденциальность</Link>
             </p>
             <p>
               Разработка —{' '}
