@@ -3,7 +3,7 @@ import Link from 'next/link'
 import React from 'react'
 import { Yeseva_One, Nunito_Sans, PT_Sans } from 'next/font/google'
 
-import { SITE_URL, SITE_NAME, FEST_DATE_HUMAN, FEST_CANCELLED } from '../../lib/site'
+import { SITE_URL, SITE_NAME, FEST_DATE_HUMAN, FEST_DATE_HUMAN_PREP, FEST_CANCELLED } from '../../lib/site'
 import { CancelBanner } from './_components/CancelNotice'
 import { Metrika } from './_components/Metrika'
 import { MetrikaInformer } from './_components/MetrikaInformer'
@@ -71,7 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <p>
               {FEST_CANCELLED ? (
                 <>
-                  г. Малмыж, Кировская область. Ярмарка {FEST_DATE_HUMAN} не состоялась;
+                  г. Малмыж, Кировская область. Ярмарка {FEST_DATE_HUMAN_PREP} не состоялась;
                   ждём новостей о 2027 годе.
                 </>
               ) : (
