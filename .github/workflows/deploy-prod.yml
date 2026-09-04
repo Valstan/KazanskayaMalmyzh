@@ -247,6 +247,42 @@ jobs:
           exit $fail
           REMOTE
 
+      # Дрейф схемы прода от конфига (класс G231, письмо brain 04.09 — третий
+      # проект на одной грабле). Payload держит в `payload_locked_documents_rels`
+      # по колонке `<коллекция>_id` на КАЖДУЮ коллекцию и берёт блокировку при
+      # открытии ЛЮБОГО документа: пропущенная колонка кладёт всю админку, а
+      # ручная миграция при этом применяется чисто и список таблиц не меняется.
+      # Проверка read-only: список слагов из src/collections → колонка обязана быть.
+      - name: Дрейф схемы — колонки блокировок под каждую коллекцию (G231)
+        run: |
+          set -eo pipefail
+          SLUGS=$(grep -hoE "^  slug: '[a-z0-9_-]+'," web/src/collections/*.ts | grep -oE "'[a-z0-9_-]+'" | tr -d "'" | sort -u)
+          [ -n "$SLUGS" ] || { echo "::error::не удалось прочитать список коллекций из web/src/collections"; exit 1; }
+          echo "коллекции в конфиге: $(echo $SLUGS | tr '\n' ' ')"
+          # Слаги уходят аргументами: stdin занят самим скриптом.
+          # shellcheck disable=SC2086
+          ssh kazanskaya 'bash -s' -- $SLUGS <<'REMOTE'
+          set -eo pipefail
+          # Строку подключения берём из окружения живого процесса, не из файла на
+          # боксе: путей сервера в публичном воркфлоу быть не должно (D-038).
+          MAINPID=$(systemctl show -p MainPID --value kazanskaya)
+          [ "$MAINPID" != "0" ] && [ -n "$MAINPID" ] || { echo "::error::юнит kazanskaya не запущен — MainPID пуст"; exit 1; }
+          DB=$(sudo -n tr '\0' '\n' < /proc/$MAINPID/environ | grep '^DATABASE_URL=' | sed 's/^DATABASE_URL=//')
+          [ -n "$DB" ] || { echo "::error::DATABASE_URL не найден в окружении процесса"; exit 1; }
+          COLS=$(psql "$DB" -tAc "SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='payload_locked_documents_rels'")
+          [ -n "$COLS" ] || { echo "::error::таблица payload_locked_documents_rels не найдена или пуста"; exit 1; }
+          MISS=""; N=0
+          for s in "$@"; do
+            N=$((N+1))
+            echo "$COLS" | grep -qx "${s}_id" || MISS="$MISS ${s}_id"
+          done
+          if [ -n "$MISS" ]; then
+            echo "::error::в payload_locked_documents_rels нет колонок:$MISS — админка не сможет открыть ни один документ (G231)"
+            exit 1
+          fi
+          echo "✅ G231: колонки блокировок на месте для всех $N коллекций"
+          REMOTE
+
       # Зеркало секретов в свою комнату КАРМАНа + выдача grant'а Сарафану.
       # ADR-0006 (обязанность зеркалить) + ADR-0012 (паспорт) + D-061 (маршрут
       # ключа приёмника без рук владельца; письма brain 02.09 и 03.09).
