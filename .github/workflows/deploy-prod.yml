@@ -251,23 +251,29 @@ jobs:
               *) echo "::error::local $path = $status, ожидалось одно из: $expected"; fail=1 ;;
             esac
           }
+          # Тело страницы берём в переменную и ищем средствами самого shell.
+          # НЕ `curl | grep -q`: `grep -q` выходит на первом совпадении, curl
+          # получает EPIPE, и под `pipefail` весь конвейер отдаёт 141 — «не
+          # найдено» при том, что маркер на странице есть. На боксе (1 vCPU,
+          # страница 47 КБ) это измерено: 49 ложных из 1800 против 0 у `case`.
+          #
+          # Для `absent` ошибка ещё опаснее, чем для `present`: ложное «не
+          # найдено» там означает «заглушки нет», то есть гейт молча проходит
+          # ровно в том случае, ради которого заведён.
+          body_of() { curl -s --max-time 15 "http://127.0.0.1:3001$1" || true; }
           # present <path> <подстрока в HTML> <что это значит> — маркер обязан быть
           present() {
-            if curl -s --max-time 15 "http://127.0.0.1:3001$1" | grep -q -- "$2"; then
-              echo "content marker OK: $1 — $3"
-            else
-              echo "::error::$1: маркер «$3» не найден (искали: $2)"
-              fail=1
-            fi
+            case "$(body_of "$1")" in
+              *"$2"*) echo "content marker OK: $1 — $3" ;;
+              *) echo "::error::$1: маркер «$3» не найден (искали: $2)"; fail=1 ;;
+            esac
           }
           # absent <path> <подстрока> <что это значит> — маркера быть не должно
           absent() {
-            if curl -s --max-time 15 "http://127.0.0.1:3001$1" | grep -q -- "$2"; then
-              echo "::error::$1: страница отдаёт заглушку «$3» — данных из БД нет"
-              fail=1
-            else
-              echo "content marker OK: $1 — заглушки «$3» нет"
-            fi
+            case "$(body_of "$1")" in
+              *"$2"*) echo "::error::$1: страница отдаёт заглушку «$3» — данных из БД нет"; fail=1 ;;
+              *) echo "content marker OK: $1 — заглушки «$3» нет" ;;
+            esac
           }
           check "/"        "200"
           check "/program" "200"
@@ -320,36 +326,28 @@ jobs:
           [ "$MAINPID" != "0" ] && [ -n "$MAINPID" ] || { echo "::error::юнит kazanskaya не запущен — MainPID пуст"; exit 1; }
           DB=$(sudo -n tr '\0' '\n' < /proc/$MAINPID/environ | grep '^DATABASE_URL=' | sed 's/^DATABASE_URL=//')
           [ -n "$DB" ] || { echo "::error::DATABASE_URL не найден в окружении процесса"; exit 1; }
-          # Показание снимается сразу после рестарта юнита, а это окно, в котором
-          # схему видно неполной: 14.09 проба так потеряла `gallery_id` и уронила
-          # деплой, хотя колонка была на месте — проверено вручную сразу после,
-          # и повторный прогон прошёл зелёным. Класс G336: приёмку после
-          # перезапуска нельзя снимать одним запросом.
-          #
-          # Ретрай гейт НЕ ослабляет: настоящая пропажа колонки за десять секунд
-          # не зарастёт, а вот гонка — проходит. Падаем только на устойчивом
-          # расхождении, и печатаем, с какой попытки сошлось, чтобы частота
-          # гонки была видна, а не пряталась.
-          MISS=""; N=0; ATTEMPT=0
-          for ATTEMPT in 1 2 3; do
-            COLS=$(psql "$DB" -tAc "SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='payload_locked_documents_rels'")
-            [ -n "$COLS" ] || { echo "::error::таблица payload_locked_documents_rels не найдена или пуста"; exit 1; }
-            MISS=""; N=0
-            for s in "$@"; do
-              N=$((N+1))
-              echo "$COLS" | grep -qx "${s}_id" || MISS="$MISS ${s}_id"
-            done
-            [ -z "$MISS" ] && break
-            if [ "$ATTEMPT" != "3" ]; then
-              echo "попытка $ATTEMPT: не хватает$MISS — схема могла ещё не устояться после рестарта, ждём 5 с"
-              sleep 5
-            fi
+          # Колонки ищем средствами самого shell — НЕ `echo "$COLS" | grep -qx`.
+          # Под `pipefail` такой конвейер врёт: `grep -q` выходит на первом
+          # совпадении, `echo` получает EPIPE, и пайплайн отдаёт 141, то есть
+          # «колонки нет» при том, что она есть. Измерено на боксе: 49 ложных
+          # срабатываний из 1800 против 0 у `case`. Именно это, а не дрейф схемы,
+          # уронило два выката 14.09 — и каждый раз «пропадала» другая колонка,
+          # что и выдало случайную природу отказа.
+          COLS=$(psql "$DB" -tAc "SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='payload_locked_documents_rels'")
+          [ -n "$COLS" ] || { echo "::error::таблица payload_locked_documents_rels не найдена или пуста"; exit 1; }
+          MISS=""; N=0
+          for s in "$@"; do
+            N=$((N+1))
+            case $'\n'"$COLS"$'\n' in
+              *$'\n'"${s}_id"$'\n'*) ;;
+              *) MISS="$MISS ${s}_id" ;;
+            esac
           done
           if [ -n "$MISS" ]; then
-            echo "::error::в payload_locked_documents_rels нет колонок:$MISS — админка не сможет открыть ни один документ (G231). Расхождение устойчиво: три попытки с паузами"
+            echo "::error::в payload_locked_documents_rels нет колонок:$MISS — админка не сможет открыть ни один документ (G231)"
             exit 1
           fi
-          echo "✅ G231: колонки блокировок на месте для всех $N коллекций (попытка $ATTEMPT)"
+          echo "✅ G231: колонки блокировок на месте для всех $N коллекций"
           REMOTE
           rc=$?
           set -e
