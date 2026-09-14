@@ -16,6 +16,14 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Все run-шаги идут под `bash` явно (G322). Шаг без `shell:` GitHub запускает
+# как `bash -e {0}` БЕЗ `pipefail`: в конвейере `a | b` код `a` теряется, и
+# `ssh ... | sed` остаётся зелёным, даже когда упала левая часть. Объявляем один раз
+# на весь файл, а не 21 раз по шагам.
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build:
     runs-on: ubuntu-latest

@@ -1,5 +1,8 @@
 import { randomBytes, timingSafeEqual } from 'crypto'
 
+// Только тип: рантайма не добавляет, файл по-прежнему проверяется тестами без БД.
+import type { Where } from 'payload'
+
 // Чистая логика приёмника ВК-конвейера, вынесенная из route.ts, чтобы её можно
 // было проверить тестами без БД и HTTP. Харвест вМалмыже (их два бага 03.08
 // проехали через зелёные lint и typecheck: `draft: false` не публикует —
@@ -143,6 +146,38 @@ export const secretMatches = (given: string, expected: string | undefined): bool
   const b = Buffer.from(expected)
   return a.length === b.length && timingSafeEqual(a, b)
 }
+
+// Поиск уже принятого поста по ключу идемпотентности.
+//
+// ⚠️ Намеренно БЕЗ `draft: true`, и это не упущение, а класс G320. `find` с этим
+// флагом читает таблицу версий, а не саму запись: у опубликованного поста, поверх
+// которого лежит сохранённый черновик, `_status` придёт `draft`. Решение «не
+// трогать опубликованное» приняло бы такой пост за черновик и затёрло бы правки,
+// сделанные руками в админке после публикации. Нужен статус самой записи —
+// значит, основная таблица.
+export type ExistingPost = { id: number | string; _status?: string | null; rubric?: unknown }
+
+// Минимум от payload, который нужен приёмнику: так логику можно проверить без БД.
+export type PostFinder = {
+  find: (args: {
+    collection: 'posts'
+    where: Where
+    limit: number
+  }) => Promise<{ docs: ExistingPost[] }>
+}
+
+export const findExistingPost = async (payload: PostFinder, vkPostId: string): Promise<ExistingPost | undefined> => {
+  const res = await payload.find({
+    collection: 'posts',
+    where: { 'source.vkPostId': { equals: vkPostId } },
+    limit: 1,
+  })
+  return res.docs[0]
+}
+
+// Опубликованный пост приёмник не трогает: после публикации его правят руками,
+// и повторная присылка того же vkPostId затёрла бы эти правки.
+export const isPublished = (post: ExistingPost): boolean => post._status === 'published'
 
 export type PostDataInput = {
   title: string

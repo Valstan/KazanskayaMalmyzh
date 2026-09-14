@@ -1,0 +1,108 @@
+name: Аудит зависимостей
+
+# Идея #312 (письмо brain 14.09, п.3): `pnpm audit` внутри CI говорит только
+# тогда, когда кто-то открыл PR. Между PR критические CVE живут на проде молча —
+# именно так мы и прожили месяц с четырьмя critical в next и payload, пока о них
+# не написал сосед.
+#
+# Поэтому аудит вынесен из PR-гейтов в собственный воркфлоу с расписанием.
+#
+# Этот воркфлоу НЕ включён в required checks и включать его туда не нужно:
+# новая CVE публикуется в чужой базе и в чужое время, она не признак плохого PR.
+# Красный прогон здесь — сигнал «иди обнови», а не запрет на мерж. Блокирующий
+# гейт на внешнее событие останавливал бы работу по причине, которую автор PR не
+# может ни предвидеть, ни починить в своей ветке.
+
+on:
+  schedule:
+    # Понедельник и четверг, 06:00 UTC = 09:00 МСК — к началу рабочего дня.
+    - cron: '0 6 * * 1,4'
+  workflow_dispatch:
+  # Смена lockfile — единственный момент, когда наш собственный поступок может
+  # завести новую уязвимость; остальные прогоны ловят чужие публикации.
+  pull_request:
+    paths:
+      - 'web/pnpm-lock.yaml'
+      - 'web/package.json'
+      - '.github/workflows/audit-deps.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-deps-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Enable corepack + pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.15.0 --activate
+
+      # Установка зависимостей не нужна: `pnpm audit` читает lockfile и опрашивает
+      # реестр. Так прогон занимает секунды и не зависит от сборки.
+      - name: pnpm audit --prod --audit-level=high
+        working-directory: web
+        run: |
+          set -o pipefail
+          # Код возврата сохраняем: он ненулевой при находках, а нам нужно и
+          # напечатать отчёт, и дать шагу покраснеть.
+          set +e
+          pnpm audit --prod --audit-level=high 2>&1 | tee /tmp/audit.txt
+          rc=${PIPESTATUS[0]}
+          pnpm audit --prod --json > /tmp/audit.json 2>/dev/null
+          set -e
+
+          # Сводка в summary прогона. Скрипт пишем файлом, а не `node -e`:
+          # внутри `-e` markdown-бэктики и кавычки JS дерутся с кавычками шелла.
+          cat > /tmp/summary.cjs <<'CJS'
+          const fs = require('fs')
+          // Нечитаемый отчёт — это «не смог проверить», а не «ничего не нашёл»
+          // (идея #303). Молчаливый catch печатал бы «чисто» при сбое аудита, и
+          // сводка врала бы ровно в тот прогон, когда она нужнее всего.
+          let j = null
+          let readError = null
+          try { j = JSON.parse(fs.readFileSync('/tmp/audit.json', 'utf8')) } catch (e) { readError = e.message }
+          if (readError) {
+            fs.appendFileSync(
+              process.env.GITHUB_STEP_SUMMARY,
+              '## Аудит зависимостей (прод)' + String.fromCharCode(10, 10) +
+                'Сводку снять не удалось: ' + readError + String.fromCharCode(10) +
+                'Смотрите вывод шага выше — он и есть источник истины.' + String.fromCharCode(10),
+            )
+            console.log('::warning::машинную сводку снять не удалось: ' + readError)
+            process.exit(0)
+          }
+          const adv = Object.values(j.advisories || {})
+          const by = (s) => adv.filter((a) => a.severity === s)
+          const crit = by('critical')
+          const high = by('high')
+          const out = []
+          out.push('## Аудит зависимостей (прод)', '')
+          out.push(`critical: **${crit.length}**, high: **${high.length}**, moderate: ${by('moderate').length}, low: ${by('low').length}`, '')
+          for (const a of [...crit, ...high]) {
+            out.push(`- **${a.severity}** \`${a.module_name}\` ${a.vulnerable_versions} -> исправлено в ${a.patched_versions}`)
+            out.push(`  ${a.title}`)
+          }
+          if (!crit.length && !high.length) out.push('Ничего уровня high и выше.')
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, out.join(String.fromCharCode(10)) + String.fromCharCode(10))
+          CJS
+          node /tmp/summary.cjs
+
+          if [ "$rc" != "0" ]; then
+            echo "::error::pnpm audit нашёл уязвимости уровня high или выше — см. сводку прогона"
+          fi
+          exit "$rc"

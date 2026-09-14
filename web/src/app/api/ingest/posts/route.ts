@@ -2,7 +2,15 @@ import { getPayload } from 'payload'
 import { NextResponse } from 'next/server'
 
 import config from '@payload-config'
-import { buildPostData, normalizeRubric, normalizeVideos, secretMatches, type IncomingVideo } from '../../../../lib/ingest'
+import {
+  buildPostData,
+  findExistingPost,
+  isPublished,
+  normalizeRubric,
+  normalizeVideos,
+  secretMatches,
+  type IncomingVideo,
+} from '../../../../lib/ingest'
 
 // Приёмник ВК-конвейера Сарафана (D-015, HITL Этап-2). Сайт — только приёмник:
 // Сарафан присылает пост POST'ом, сайт в ВК сам не ходит. Харвест вМалмыже.
@@ -96,15 +104,9 @@ export async function POST(request: Request): Promise<NextResponse> {
   const videos = normalizeVideos(body.videos, warnings)
   const rubric = normalizeRubric(body.rubric, warnings)
 
-  const existing = await payload.find({
-    collection: 'posts',
-    where: { 'source.vkPostId': { equals: vkPostId } },
-    draft: true,
-    limit: 1,
-  })
-  const existingPost = existing.docs[0]
+  const existingPost = await findExistingPost(payload, vkPostId)
 
-  if (existingPost && existingPost._status === 'published') {
+  if (existingPost && isPublished(existingPost)) {
     return NextResponse.json({ created: false, updated: false, id: existingPost.id, warnings }, { status: 200 })
   }
 

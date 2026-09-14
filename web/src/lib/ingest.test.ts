@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildContent, buildPostData, normalizeRubric, normalizeVideos, secretMatches } from './ingest'
+import {
+  buildContent,
+  buildPostData,
+  findExistingPost,
+  isPublished,
+  normalizeRubric,
+  normalizeVideos,
+  secretMatches,
+  type ExistingPost,
+  type PostFinder,
+} from './ingest'
 
 // Тесты по следам двух багов вМалмыже (03.08), проехавших через зелёные lint и
 // typecheck: публикация через `draft:false` и publish у любого держателя ключа.
@@ -83,5 +93,59 @@ describe('видео', () => {
     expect(videos).toHaveLength(5)
     expect(w[0]).toMatch(/invalid url/)
     expect(w.at(-1)).toMatch(/truncated/)
+  })
+})
+
+describe('поиск принятого поста: читаем запись, а не её версии (G320)', () => {
+  // Фейк вместо payload: запоминает аргументы запроса и отдаёт то, что лежало бы
+  // в основной таблице. Версии он не знает вовсе — в этом и смысл проверки.
+  const finderReturning = (docs: ExistingPost[]) => {
+    const calls: Record<string, unknown>[] = []
+    return {
+      calls,
+      payload: {
+        find: async (args: Record<string, unknown>) => {
+          calls.push(args)
+          return { docs }
+        },
+      } as unknown as PostFinder,
+    }
+  }
+
+  it('запрос уходит БЕЗ draft — иначе вернутся версии, а не запись', async () => {
+    const { calls, payload } = finderReturning([])
+    await findExistingPost(payload, '-1_2')
+
+    expect(calls).toHaveLength(1)
+    // Именно отсутствие ключа, а не draft: false: с `draft: true` payload читает
+    // таблицу версий, и _status приходит от последнего черновика.
+    expect('draft' in calls[0]!).toBe(false)
+    expect(calls[0]).toMatchObject({
+      collection: 'posts',
+      where: { 'source.vkPostId': { equals: '-1_2' } },
+      limit: 1,
+    })
+  })
+
+  it('опубликованный пост с черновиком поверх остаётся защищённым', async () => {
+    // Ровно та авария: запись опубликована, поверх неё сохранён черновик.
+    // Чтение версий отдало бы _status: draft, и приёмник затёр бы публикацию.
+    const { payload } = finderReturning([{ id: 7, _status: 'published' }])
+    const found = await findExistingPost(payload, '-1_2')
+
+    expect(found?._status).toBe('published')
+    expect(isPublished(found!)).toBe(true)
+  })
+
+  it('черновик не защищён — его приёмник обновляет', async () => {
+    const { payload } = finderReturning([{ id: 8, _status: 'draft' }])
+    const found = await findExistingPost(payload, '-1_3')
+
+    expect(isPublished(found!)).toBe(false)
+  })
+
+  it('ничего не найдено — undefined, пост будет создан', async () => {
+    const { payload } = finderReturning([])
+    expect(await findExistingPost(payload, '-1_4')).toBeUndefined()
   })
 })
