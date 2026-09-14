@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import sharp from 'sharp'
 import path from 'path'
@@ -11,7 +12,7 @@ import { Gallery } from './collections/Gallery'
 import { Media } from './collections/Media'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
-import { SESSION_COOKIE_PREFIX } from './lib/site'
+import { SESSION_COOKIE_PREFIX, SITE_NAME, SITE_URL } from './lib/site'
 import { FestivalMap } from './globals/FestivalMap'
 
 const filename = fileURLToPath(import.meta.url)
@@ -52,6 +53,38 @@ export default buildConfig({
   // Остальные три условия Payload выполняет сам: `path: '/'` задан жёстко,
   // `domain` не ставится, пока не задан в коллекции (мы его не задаём), а
   // `secure` включён в `auth.cookies` коллекции Users.
+  // Адрес сайта. Без него `serverURL` пуст по умолчанию, и ссылка в письме
+  // сброса пароля собирается относительной — то есть письмо приходит с
+  // неработающей ссылкой, а понять это можно только получив письмо.
+  serverURL: SITE_URL,
+  // Почта. Пока SMTP_HOST не задан, адаптера нет вовсе и Payload ведёт себя
+  // как раньше: пишет в журнал «Email attempted without being configured».
+  // Так dev и CI не требуют почтового сервера, а прод получает настоящую
+  // отправку, как только переменные появятся в окружении.
+  //
+  // `skipVerify` осознанно: по умолчанию адаптер проверяет связь с SMTP при
+  // старте, и недоступный почтовый сервер не дал бы подняться САЙТУ. Письма
+  // второстепенны, доступность сайта — нет; сбой доставки увидим в журнале.
+  email: process.env.SMTP_HOST
+    ? nodemailerAdapter({
+        defaultFromAddress: process.env.SMTP_FROM || process.env.SMTP_USER || '',
+        defaultFromName: SITE_NAME,
+        skipVerify: true,
+        transportOptions: {
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT || 587),
+          // 465 — SMTPS (шифрование сразу), 587 — STARTTLS (шифрование после
+          // приветствия). Перепутанная пара порт/режим даёт зависание, а не
+          // внятную ошибку, поэтому режим выводится из порта, а не задаётся
+          // отдельной переменной, которую можно рассогласовать.
+          secure: Number(process.env.SMTP_PORT || 587) === 465,
+          auth: {
+            user: process.env.SMTP_USER || '',
+            pass: process.env.SMTP_PASS || '',
+          },
+        },
+      })
+    : undefined,
   cookiePrefix: SESSION_COOKIE_PREFIX,
   secret: process.env.PAYLOAD_SECRET || '',
   sharp,

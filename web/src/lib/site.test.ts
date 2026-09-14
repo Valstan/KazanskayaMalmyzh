@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import { Users } from '../collections/Users'
 
-import { FEST_DATE_ISO, FEST_DATE_HUMAN, FEST_DATE_HUMAN_PREP, SESSION_COOKIE_PREFIX } from './site'
+import { FEST_DATE_ISO, FEST_DATE_HUMAN, FEST_DATE_HUMAN_PREP, SESSION_COOKIE_PREFIX, SITE_URL } from './site'
 
 // Дата праздника живёт в трёх формах: машинной (ISO), именительной (стоит
 // отдельной репликой — «суббота, 25 июля 2026 · г. Малмыж») и предложной
@@ -77,5 +77,33 @@ describe('сессионная cookie админки: префикс __Host- (#2
     const cookies = (Users.auth as { cookies?: Record<string, unknown> }).cookies
     expect(cookies?.secure).toBe(true)
     expect(cookies && 'domain' in cookies).toBe(false)
+  })
+})
+
+describe('письмо восстановления пароля', () => {
+  const fp = (Users.auth as {
+    forgotPassword?: {
+      generateEmailSubject?: () => string
+      generateEmailHTML?: (a?: { token?: string }) => string
+    }
+  }).forgotPassword
+
+  it('тема и текст по-русски', () => {
+    expect(fp?.generateEmailSubject?.()).toContain('Восстановление пароля')
+    expect(fp?.generateEmailHTML?.({ token: 'T' })).toContain('Задать новый пароль')
+  })
+
+  // Ссылка обязана быть абсолютной: относительная в письме некликабельна, а
+  // заметить это можно только получив письмо — то есть уже в проде.
+  it('ссылка абсолютная, ведёт на /admin/reset/<токен> и содержит сам токен', () => {
+    const html = fp?.generateEmailHTML?.({ token: 'ABC123' }) ?? ''
+    const href = html.match(/href="([^"]+)"/)?.[1] ?? ''
+    expect(href).toMatch(/^https?:\/\//)
+    expect(href).toBe(`${SITE_URL}/admin/reset/ABC123`)
+  })
+
+  it('без токена не подставляет undefined в адрес', () => {
+    const html = fp?.generateEmailHTML?.({}) ?? ''
+    expect(html).not.toContain('undefined')
   })
 })
