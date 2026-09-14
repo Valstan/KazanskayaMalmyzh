@@ -47,6 +47,14 @@ concurrency:
   group: deploy-prod
   cancel-in-progress: false
 
+# Все run-шаги идут под `bash` явно (G322). Шаг без `shell:` GitHub запускает
+# как `bash -e {0}` БЕЗ `pipefail`: в конвейере `a | b` код `a` теряется, и
+# `ssh ... | sed` остаётся зелёным, даже когда упала левая часть. Объявляем один раз
+# на весь файл, а не 21 раз по шагам.
+defaults:
+  run:
+    shell: bash
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -170,8 +178,28 @@ jobs:
       - name: Ship artifact + restart
         run: |
           set -e
-          scp -q kazanskaya-app.tgz kazanskaya:/tmp/kazanskaya-app.tgz
-          ssh kazanskaya 'bash -s' "${{ github.sha }}" <<'REMOTE'
+          # `ssh host 'bash -s' "$A"` НЕ передаёт argv: ssh склеивает аргументы в
+          # одну строку, и удалённый shell разбирает её заново (G321). Значение с
+          # пробелом развалилось бы на два, пустое исчезло бы. Здесь это
+          # безопасно, но по построению, а не по везению — проверяем формат явно.
+          SHA='${{ github.sha }}'
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::github.sha не похож на sha1 — отказ передавать аргументом"; exit 1; }
+
+          # stderr клиентов ssh/scp гасим: при обрыве связи они печатают
+          # `ssh: connect to host <хост> port <порт>` отдельными словами, и
+          # маскировка secrets этого не ловит — она бьёт по значению целиком
+          # (G315). Взамен удалённый скрипт сам сводит свой stderr в stdout
+          # (`exec 2>&1` ниже), иначе вместе с чужим мы заглушили бы и свою
+          # диагностику. Код возврата сохраняем и выносим наружу.
+          set +e
+          scp -q kazanskaya-app.tgz kazanskaya:/tmp/kazanskaya-app.tgz 2>/dev/null
+          rc=$?
+          set -e
+          [ "$rc" = "0" ] || { echo "::error::scp не доставил артефакт (код $rc); детали не печатаем"; exit "$rc"; }
+
+          set +e
+          ssh kazanskaya 'bash -s' "$SHA" 2>/dev/null <<'REMOTE'
+          exec 2>&1
           set -e
           SHA="$1"
           BASE="$HOME/kazanskaya"
@@ -191,6 +219,13 @@ jobs:
           ls -1dt "$BASE"/releases/*/ 2>/dev/null | tail -n +6 | xargs -r rm -rf
           echo "deployed $SHA"
           REMOTE
+          rc=$?
+          set -e
+          # Именно `if`, а не `[ ... ] && echo`: под `set -e` такая строка при
+          # rc=0 возвращает 1 (тест ложен, && замыкается) и роняет шаг на
+          # успешном деплое. Тот же дефект — в рецепте письма 05.09.
+          if [ "$rc" = "255" ]; then echo "::error::ssh не соединился (255); детали не печатаем"; fi
+          exit "$rc"
 
       # #011 content-smoke: не только 200, но и контент-маркер.
       # Ревизия гейтов (#104, 2026-07-30): маркер главной «Ярмарка Казанская» —
@@ -200,8 +235,10 @@ jobs:
       # сборочной базы (G203).
       - name: Smoke check — routes (/, /program, /map, /admin) + content from DB
         run: |
-          set -e
-          ssh kazanskaya 'bash -s' <<'REMOTE'
+          # stderr ssh гасим (G315), удалённый скрипт сводит свой в stdout.
+          set +e
+          ssh kazanskaya 'bash -s' 2>/dev/null <<'REMOTE'
+          exec 2>&1
           set -e
           sleep 6   # дать сервису подняться после systemctl restart
           fail=0
@@ -246,6 +283,10 @@ jobs:
           absent "/map"     "по площадкам временно недоступно" "площадки недоступны"
           exit $fail
           REMOTE
+          rc=$?
+          set -e
+          if [ "$rc" = "255" ]; then echo "::error::ssh не соединился (255); детали не печатаем"; fi
+          exit "$rc"
 
       # Дрейф схемы прода от конфига (класс G231, письмо brain 04.09 — третий
       # проект на одной грабле). Payload держит в `payload_locked_documents_rels`
@@ -258,10 +299,20 @@ jobs:
           set -eo pipefail
           SLUGS=$(grep -hoE "^  slug: '[a-z0-9_-]+'," web/src/collections/*.ts | grep -oE "'[a-z0-9_-]+'" | tr -d "'" | sort -u)
           [ -n "$SLUGS" ] || { echo "::error::не удалось прочитать список коллекций из web/src/collections"; exit 1; }
+          # Слаги уезжают аргументами через ssh, а он не передаёт argv (G321):
+          # слаг с пробелом развалился бы на два, и проба молча проверила бы не то.
+          # Грамматика слага это исключает — убеждаемся, а не полагаемся.
+          for s in $SLUGS; do
+            [[ "$s" =~ ^[a-z0-9_-]+$ ]] || { echo "::error::слаг '$s' содержит небезопасные для передачи символы"; exit 1; }
+          done
           echo "коллекции в конфиге: $(echo $SLUGS | tr '\n' ' ')"
           # Слаги уходят аргументами: stdin занят самим скриптом.
           # shellcheck disable=SC2086
-          ssh kazanskaya 'bash -s' -- $SLUGS <<'REMOTE'
+          # stderr ssh гасим (G315); psql и sudo на боксе печатают ошибки в
+          # stderr, поэтому удалённый скрипт первой строкой сводит его в stdout.
+          set +e
+          ssh kazanskaya 'bash -s' -- $SLUGS 2>/dev/null <<'REMOTE'
+          exec 2>&1
           set -eo pipefail
           # Строку подключения берём из окружения живого процесса, не из файла на
           # боксе: путей сервера в публичном воркфлоу быть не должно (D-038).
@@ -282,6 +333,10 @@ jobs:
           fi
           echo "✅ G231: колонки блокировок на месте для всех $N коллекций"
           REMOTE
+          rc=$?
+          set -e
+          if [ "$rc" = "255" ]; then echo "::error::ssh не соединился (255); детали не печатаем"; fi
+          exit "$rc"
 
       # Зеркало секретов в свою комнату КАРМАНа + выдача grant'а Сарафану.
       # ADR-0006 (обязанность зеркалить) + ADR-0012 (паспорт) + D-061 (маршрут
@@ -410,7 +465,13 @@ jobs:
       - name: On failure — состояние юнита (урезанный вывод)
         if: failure()
         run: |
-          ssh kazanskaya 'bash -s' <<'REMOTE' 2>&1 || true
+          # Было `2>&1` — то есть stderr ssh шёл прямо в публичный лог, и при
+          # обрыве связи туда уехала бы строка `ssh: connect to host <хост> port
+          # <порт>` целиком (G315). Гасим её; своя диагностика не теряется, её
+          # сводит в stdout `exec 2>&1` на удалённой стороне. `|| true` остаётся:
+          # шаг диагностический, падать ему незачем.
+          ssh kazanskaya 'bash -s' 2>/dev/null <<'REMOTE' || true
+          exec 2>&1
           set +e
           H="$(hostname -s)"
           U="$(id -un)"
