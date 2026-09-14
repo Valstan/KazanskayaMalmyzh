@@ -26,7 +26,18 @@ export const Users: CollectionConfig = {
     defaultColumns: ['name', 'email', 'roles'],
     useAsTitle: 'name',
   },
-  auth: true,
+  // `secure` обязателен для `__Host-`-cookie и стоит безусловно, а не «только в
+  // проде»: браузеры считают localhost защищённым origin, поэтому dev от этого не
+  // страдает, а условие «в проде» — это ровно тот выключатель, который однажды
+  // окажется выключен там, где нужен. `domain` не задаём намеренно: у cookie с
+  // префиксом `__Host-` этот атрибут запрещён, и его появление здесь тихо сделает
+  // cookie невалидной (G339 — вход начнёт крутить на форму входа без строки в логе).
+  auth: {
+    cookies: {
+      secure: true,
+      sameSite: 'Lax',
+    },
+  },
   fields: [
     {
       name: 'name',
