@@ -320,18 +320,36 @@ jobs:
           [ "$MAINPID" != "0" ] && [ -n "$MAINPID" ] || { echo "::error::юнит kazanskaya не запущен — MainPID пуст"; exit 1; }
           DB=$(sudo -n tr '\0' '\n' < /proc/$MAINPID/environ | grep '^DATABASE_URL=' | sed 's/^DATABASE_URL=//')
           [ -n "$DB" ] || { echo "::error::DATABASE_URL не найден в окружении процесса"; exit 1; }
-          COLS=$(psql "$DB" -tAc "SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='payload_locked_documents_rels'")
-          [ -n "$COLS" ] || { echo "::error::таблица payload_locked_documents_rels не найдена или пуста"; exit 1; }
-          MISS=""; N=0
-          for s in "$@"; do
-            N=$((N+1))
-            echo "$COLS" | grep -qx "${s}_id" || MISS="$MISS ${s}_id"
+          # Показание снимается сразу после рестарта юнита, а это окно, в котором
+          # схему видно неполной: 14.09 проба так потеряла `gallery_id` и уронила
+          # деплой, хотя колонка была на месте — проверено вручную сразу после,
+          # и повторный прогон прошёл зелёным. Класс G336: приёмку после
+          # перезапуска нельзя снимать одним запросом.
+          #
+          # Ретрай гейт НЕ ослабляет: настоящая пропажа колонки за десять секунд
+          # не зарастёт, а вот гонка — проходит. Падаем только на устойчивом
+          # расхождении, и печатаем, с какой попытки сошлось, чтобы частота
+          # гонки была видна, а не пряталась.
+          MISS=""; N=0; ATTEMPT=0
+          for ATTEMPT in 1 2 3; do
+            COLS=$(psql "$DB" -tAc "SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='payload_locked_documents_rels'")
+            [ -n "$COLS" ] || { echo "::error::таблица payload_locked_documents_rels не найдена или пуста"; exit 1; }
+            MISS=""; N=0
+            for s in "$@"; do
+              N=$((N+1))
+              echo "$COLS" | grep -qx "${s}_id" || MISS="$MISS ${s}_id"
+            done
+            [ -z "$MISS" ] && break
+            if [ "$ATTEMPT" != "3" ]; then
+              echo "попытка $ATTEMPT: не хватает$MISS — схема могла ещё не устояться после рестарта, ждём 5 с"
+              sleep 5
+            fi
           done
           if [ -n "$MISS" ]; then
-            echo "::error::в payload_locked_documents_rels нет колонок:$MISS — админка не сможет открыть ни один документ (G231)"
+            echo "::error::в payload_locked_documents_rels нет колонок:$MISS — админка не сможет открыть ни один документ (G231). Расхождение устойчиво: три попытки с паузами"
             exit 1
           fi
-          echo "✅ G231: колонки блокировок на месте для всех $N коллекций"
+          echo "✅ G231: колонки блокировок на месте для всех $N коллекций (попытка $ATTEMPT)"
           REMOTE
           rc=$?
           set -e
