@@ -13,6 +13,7 @@ import { Hero } from '../_components/Hero'
 export const revalidate = 3600
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/privacy' },
   title: 'Конфиденциальность',
   description:
     'Какие данные собирает сайт Ярмарки Казанской: счётчик Яндекс.Метрики, cookie и как от него отказаться.',

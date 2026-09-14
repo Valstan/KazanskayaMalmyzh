@@ -20,6 +20,10 @@ export async function generateMetadata({ params }: Args): Promise<Metadata> {
     title: post.title,
     description: post.summary ?? undefined,
     openGraph: cover ? { images: [{ url: cover }] } : undefined,
+    // Слаг берётся из найденной записи, а не из адреса: адрес приходит
+    // процентно-закодированным, и canonical из него указывал бы на другую строку,
+    // чем тот же материал, открытый по ссылке из ленты.
+    alternates: post.slug ? { canonical: `/news/${post.slug}` } : undefined,
   }
 }
 

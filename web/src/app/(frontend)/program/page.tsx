@@ -16,6 +16,7 @@ import { ProgramLive, type ProgramEvent } from '../_components/ProgramLive'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/program' },
   title: 'Программа праздника',
   description: FEST_CANCELLED
     ? `${FEST_CANCEL_LEAD} ${FEST_CANCEL_NOTE} Ниже сохранена планировавшаяся программа 2026 года: шествие, Город мастеров, Этногород, сцена и фейерверк.`

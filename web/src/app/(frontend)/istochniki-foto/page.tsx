@@ -11,6 +11,7 @@ import { YEARS } from '../../../lib/years'
 export const revalidate = 3600
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/istochniki-foto' },
   title: 'Источники фотографий',
   description: 'Авторы и лицензии фотографий, использованных на сайте Ярмарки Казанской.',
 }

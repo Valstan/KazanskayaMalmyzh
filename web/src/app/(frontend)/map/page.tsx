@@ -14,6 +14,7 @@ import { VenueIcon } from '../_components/VenueIcon'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/map' },
   title: 'Карта праздника',
   description: FEST_CANCELLED
     ? `${FEST_CANCEL_LEAD} ${FEST_CANCEL_NOTE} Ниже — площадки, сцены и маршрут шествия, как они планировались.`

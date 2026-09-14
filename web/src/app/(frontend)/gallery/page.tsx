@@ -10,6 +10,7 @@ import { galleryStories } from '../../../lib/galleryPhotos'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/gallery' },
   title: 'Галерея',
   description:
     'Фотографии Ярмарки Казанской в Малмыже историями: карнавальное шествие, сцена и открытие, Город мастеров, награждение — кадры разных лет.',
