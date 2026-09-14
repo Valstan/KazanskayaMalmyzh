@@ -1,6 +1,9 @@
+import { generatePayloadCookie } from 'payload'
 import { describe, expect, it } from 'vitest'
 
-import { FEST_DATE_ISO, FEST_DATE_HUMAN, FEST_DATE_HUMAN_PREP } from './site'
+import { Users } from '../collections/Users'
+
+import { FEST_DATE_ISO, FEST_DATE_HUMAN, FEST_DATE_HUMAN_PREP, SESSION_COOKIE_PREFIX } from './site'
 
 // Дата праздника живёт в трёх формах: машинной (ISO), именительной (стоит
 // отдельной репликой — «суббота, 25 июля 2026 · г. Малмыж») и предложной
@@ -44,5 +47,35 @@ describe('формы даты праздника не расходятся', () 
   it('предложная форма встаёт внутрь фразы, именительная — нет', () => {
     expect(`Ярмарка ${FEST_DATE_HUMAN_PREP} не состоялась`).toMatch(/^Ярмарка в \S+ /)
     expect(FEST_DATE_HUMAN.startsWith('в ')).toBe(false)
+  })
+})
+
+describe('сессионная cookie админки: префикс __Host- (#285)', () => {
+  it('префикс начинается с __Host-', () => {
+    expect(SESSION_COOKIE_PREFIX.startsWith('__Host-')).toBe(true)
+  })
+
+  // Проверяем не намерение, а результат: гоняем настоящий генератор Payload с
+  // нашими настройками и смотрим на готовую строку Set-Cookie. Тест краснеет,
+  // если кто-то уберёт secure или добавит domain — то есть на обеих формах
+  // молчаливой поломки входа из G339.
+  it('готовая cookie удовлетворяет всем четырём условиям __Host-', () => {
+    const cookie = generatePayloadCookie({
+      collectionAuthConfig: Users.auth as never,
+      cookiePrefix: SESSION_COOKIE_PREFIX,
+      token: 'TEST',
+    })
+
+    expect(cookie).toContain('__Host-payload-token=')
+    expect(cookie).toMatch(/Path=\/(;|$)/)
+    expect(cookie).toContain('Secure')
+    // Domain у __Host--cookie запрещён: браузер отвергнет её молча.
+    expect(cookie).not.toMatch(/Domain=/i)
+  })
+
+  it('в коллекции Users задан secure и не задан domain', () => {
+    const cookies = (Users.auth as { cookies?: Record<string, unknown> }).cookies
+    expect(cookies?.secure).toBe(true)
+    expect(cookies && 'domain' in cookies).toBe(false)
   })
 })

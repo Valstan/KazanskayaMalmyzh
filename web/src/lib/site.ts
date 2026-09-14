@@ -1,5 +1,18 @@
 // Константы сайта. Все внешние URL — строго punycode (G133/G134).
 export const SITE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+// Префикс имени сессионной cookie админки. Payload соберёт из него
+// `__Host-payload-token` и им же будет её читать.
+//
+// `__Host-` — не украшение имени, а инструкция браузеру: такую cookie он примет
+// только от точного хоста, только по HTTPS, только с `Path=/` и запретит у неё
+// атрибут `Domain`. Без префикса любой сосед по `вмалмыже.рф` вправе выставить
+// cookie с `Domain=.вмалмыже.рф` и тем же именем, а при совпадении имён победит
+// подброшенная (#285).
+//
+// Живёт здесь, а не строкой в payload.config, чтобы тест проверял ровно то
+// значение, которое уедет в прод.
+export const SESSION_COOKIE_PREFIX = '__Host-payload'
+
 export const SITE_NAME = 'Ярмарка Казанская в Малмыже'
 export const FEST_DATE_ISO = '2026-07-25'
 export const FEST_DATE_HUMAN = 'суббота, 25 июля 2026'
