@@ -1,6 +1,8 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
+
+import { useNow } from '../../../lib/useNow'
 
 import { FEST_CANCELLED } from '../../../lib/site'
 
@@ -64,12 +66,7 @@ function parse(d?: string | null): number | null {
 const DEFAULT_DURATION_MS = 60 * 60_000
 
 export function ProgramLive({ events }: { events: ProgramEvent[] }) {
-  const [now, setNow] = useState<number | null>(null)
-  useEffect(() => {
-    setNow(Date.now())
-    const id = setInterval(() => setNow(Date.now()), 60_000)
-    return () => clearInterval(id)
-  }, [])
+  const now = useNow(60_000)
 
   const statusById = useMemo(() => {
     const map = new Map<number | string, Status>()

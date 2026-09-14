@@ -1,16 +1,17 @@
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
-import { FlatCompat } from '@eslint/eslintrc'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-})
+// Плоский конфиг ESLint 9.
+//
+// С Next 16 команда `next lint` удалена, а `eslint-config-next` больше не отдаёт
+// eslintrc-совместимые пресеты — разворачивать их через FlatCompat нечем. Пресеты
+// теперь сами плоские массивы, поэтому подключаются обычным импортом.
+//
+// Набор правил намеренно оставлен прежним: core-web-vitals + typescript, ровно то,
+// что раньше перечислялось в `compat.extends('next/core-web-vitals', 'next/typescript')`.
+import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
+import nextTypescript from 'eslint-config-next/typescript'
 
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  ...nextCoreWebVitals,
+  ...nextTypescript,
   {
     rules: {
       '@typescript-eslint/ban-ts-comment': 'warn',

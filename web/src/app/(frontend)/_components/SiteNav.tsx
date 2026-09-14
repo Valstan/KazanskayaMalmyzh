@@ -24,7 +24,15 @@ export function SiteNav() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
-  useEffect(() => setOpen(false), [pathname])
+  // Смена маршрута закрывает меню. Это сброс состояния по изменению входного
+  // значения, а не побочный эффект, поэтому считается прямо в рендере — штатный
+  // приём React. Через useEffect тот же сброс давал лишний проход и ловится
+  // гейтом `react-hooks/set-state-in-effect` (Next 16).
+  const [renderedPath, setRenderedPath] = useState(pathname)
+  if (renderedPath !== pathname) {
+    setRenderedPath(pathname)
+    setOpen(false)
+  }
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)

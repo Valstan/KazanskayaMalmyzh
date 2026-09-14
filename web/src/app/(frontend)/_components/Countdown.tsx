@@ -1,6 +1,8 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
+
+import { useNow } from '../../../lib/useNow'
 
 // Обратный отсчёт до открытия праздника (лубок-редизайн, спека §2 «Первый экран»):
 // четыре сегмента дни/часы/минуты/секунды. Считается на клиенте после монтирования
@@ -23,12 +25,7 @@ function plural(n: number, [many, few, one]: readonly [string, string, string]):
 }
 
 export function Countdown({ startIso }: { startIso: string }) {
-  const [now, setNow] = useState<number | null>(null)
-  useEffect(() => {
-    setNow(Date.now())
-    const id = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(id)
-  }, [])
+  const now = useNow(1000)
 
   if (now === null) return <div className="countdown" aria-hidden />
 

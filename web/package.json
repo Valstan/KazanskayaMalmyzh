@@ -9,7 +9,7 @@
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=4096\" next build",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
-    "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint",
+    "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "typecheck": "cross-env NODE_OPTIONS=--no-deprecation tsc --noEmit",
     "test": "vitest run",
     "lint:css": "stylelint \"src/**/*.css\"",
@@ -18,24 +18,23 @@
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap"
   },
   "dependencies": {
-    "@payloadcms/db-postgres": "3.75.0",
-    "@payloadcms/next": "3.75.0",
-    "@payloadcms/richtext-lexical": "3.75.0",
+    "@payloadcms/db-postgres": "3.89.0",
+    "@payloadcms/next": "3.89.0",
+    "@payloadcms/richtext-lexical": "3.89.0",
     "graphql": "^16.8.2",
-    "next": "15.4.11",
-    "payload": "3.75.0",
+    "next": "16.3.5",
+    "payload": "3.89.0",
     "react": "19.2.1",
     "react-dom": "19.2.1",
-    "sharp": "0.34.2"
+    "sharp": "0.35.4"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.2.0",
     "@types/node": "22.19.9",
     "@types/react": "19.2.9",
     "@types/react-dom": "19.2.3",
     "cross-env": "^7.0.3",
     "eslint": "^9.16.0",
-    "eslint-config-next": "15.4.11",
+    "eslint-config-next": "16.3.5",
     "prettier": "^3.4.2",
     "stylelint": "^16.26.1",
     "stylelint-config-recommended": "^17.0.0",
@@ -43,7 +42,7 @@
     "vitest": "^3.2.7"
   },
   "engines": {
-    "node": "^18.20.2 || >=20.9.0",
+    "node": ">=20.9.0",
     "pnpm": "^9 || ^10"
   },
   "packageManager": "pnpm@10.15.0",
