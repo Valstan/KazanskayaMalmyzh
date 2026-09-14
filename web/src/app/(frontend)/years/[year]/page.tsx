@@ -18,6 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ year: str
   return {
     title: `Ярмарка Казанская — ${info.year}: ${info.theme}`,
     description: info.paragraphs[0]?.slice(0, 160),
+    alternates: { canonical: `/years/${info.year}` },
   }
 }
 

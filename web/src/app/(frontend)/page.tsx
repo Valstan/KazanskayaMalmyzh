@@ -1,9 +1,17 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { festivalJsonLd } from '../../lib/seo'
 import { HomeHero } from './_components/Hero'
 
 export const revalidate = 3600
+
+// Только canonical: заголовок, описание и Open Graph главная берёт из корневого
+// layout. Сам canonical в layout положить нельзя — оттуда он наследуется каждой
+// страницей и склеивает весь сайт в один адрес (G312).
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+}
 
 const eventJsonLd = festivalJsonLd()
 

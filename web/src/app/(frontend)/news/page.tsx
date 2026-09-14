@@ -9,6 +9,7 @@ import { findPublishedPosts } from '../../../lib/posts'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/news' },
   title: 'Новости',
   description:
     'Новости Ярмарки Казанской и Малмыжского района: подготовка праздника, мастера, культура — из официальных пабликов с указанием источника.',

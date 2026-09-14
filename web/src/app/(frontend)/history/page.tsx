@@ -7,6 +7,7 @@ import { Hero, Figure } from '../_components/Hero'
 export const revalidate = 3600
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/history' },
   title: 'История ярмарки и города',
   description:
     'Малмыж основан в 1584 году. Сибирский тракт, купеческие лавки, базары по средам и субботам — и ярмарка, выросшая из престольного праздника.',

@@ -5,6 +5,7 @@ import { YEARS, yearsWithPage } from '../../../lib/years'
 import { Hero } from '../_components/Hero'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/years' },
   title: 'Как это было — темы ярмарки по годам',
   description:
     'Летопись Ярмарки Казанской: ежегодные темы карнавального шествия с фотографиями и подробностями — от «Города мастеров» 2012 года до «Мы Вятские — люди хватские!» 2026 года.',
