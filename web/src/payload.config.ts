@@ -65,26 +65,35 @@ export default buildConfig({
   // `skipVerify` осознанно: по умолчанию адаптер проверяет связь с SMTP при
   // старте, и недоступный почтовый сервер не дал бы подняться САЙТУ. Письма
   // второстепенны, доступность сайта — нет; сбой доставки увидим в журнале.
-  email: process.env.SMTP_HOST
-    ? nodemailerAdapter({
-        defaultFromAddress: process.env.SMTP_FROM || process.env.SMTP_USER || '',
-        defaultFromName: SITE_NAME,
-        skipVerify: true,
-        transportOptions: {
-          host: process.env.SMTP_HOST,
-          port: Number(process.env.SMTP_PORT || 587),
-          // 465 — SMTPS (шифрование сразу), 587 — STARTTLS (шифрование после
-          // приветствия). Перепутанная пара порт/режим даёт зависание, а не
-          // внятную ошибку, поэтому режим выводится из порта, а не задаётся
-          // отдельной переменной, которую можно рассогласовать.
-          secure: Number(process.env.SMTP_PORT || 587) === 465,
-          auth: {
-            user: process.env.SMTP_USER || '',
-            pass: process.env.SMTP_PASS || '',
+  //
+  // Ключ задаётся ТОЛЬКО когда SMTP настроен — через спред, а не `: undefined`.
+  // Разница не косметическая: явный `email: undefined` снимает и встроенную
+  // заглушку Payload, после чего `sendEmail` падает внутри транзакции
+  // `forgotPassword`, она откатывается вместе с токеном, а наружу уходит
+  // «Success». Кнопка «Забыли пароль?» отвечает успехом и молча ничего не
+  // делает. Поймано на проде 14.09 по тому, что токен перестал появляться в БД.
+  ...(process.env.SMTP_HOST
+    ? {
+        email: nodemailerAdapter({
+          defaultFromAddress: process.env.SMTP_FROM || process.env.SMTP_USER || '',
+          defaultFromName: SITE_NAME,
+          skipVerify: true,
+          transportOptions: {
+            host: process.env.SMTP_HOST,
+            port: Number(process.env.SMTP_PORT || 587),
+            // 465 — SMTPS (шифрование сразу), 587 — STARTTLS (после приветствия).
+            // Перепутанная пара порт/режим даёт зависание, а не внятную ошибку,
+            // поэтому режим выводится из порта, а не задаётся отдельной
+            // переменной, которую можно рассогласовать.
+            secure: Number(process.env.SMTP_PORT || 587) === 465,
+            auth: {
+              user: process.env.SMTP_USER || '',
+              pass: process.env.SMTP_PASS || '',
+            },
           },
-        },
-      })
-    : undefined,
+        }),
+      }
+    : {}),
   cookiePrefix: SESSION_COOKIE_PREFIX,
   secret: process.env.PAYLOAD_SECRET || '',
   sharp,
