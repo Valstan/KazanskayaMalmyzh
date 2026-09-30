@@ -1,5 +1,6 @@
 import * as migration_20260712_112526_initial from './20260712_112526_initial';
 import * as migration_20260902_153024_posts_ingest from './20260902_153024_posts_ingest';
+import * as migration_20260930_135611 from './20260930_135611';
 
 export const migrations = [
   {
@@ -10,6 +11,11 @@ export const migrations = [
   {
     up: migration_20260902_153024_posts_ingest.up,
     down: migration_20260902_153024_posts_ingest.down,
-    name: '20260902_153024_posts_ingest'
+    name: '20260902_153024_posts_ingest',
+  },
+  {
+    up: migration_20260930_135611.up,
+    down: migration_20260930_135611.down,
+    name: '20260930_135611'
   },
 ];
