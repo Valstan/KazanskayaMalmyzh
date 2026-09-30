@@ -18,6 +18,12 @@ import { FestivalMap } from './globals/FestivalMap'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+// Тип транспорта берём у самого адаптера, а не пишем руками: так приведение ниже
+// сломается само, если Payload поменяет сигнатуру, а не молча разойдётся с ней.
+type NodemailerTransportOptions = NonNullable<
+  NonNullable<Parameters<typeof nodemailerAdapter>[0]>['transportOptions']
+>
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -88,7 +94,15 @@ export default buildConfig({
               user: process.env.SMTP_USER || '',
               pass: process.env.SMTP_PASS || '',
             },
-          },
+            // Приведение типа — не украшение, а починка чужой ошибки. nodemailer
+            // 10 перешёл на TypeScript и больше не берёт `@types/nodemailer`:
+            // его собственный `SMTPConnectionOptions` не содержит `auth`, хотя
+            // транспорт это поле читает и без него не залогинится. Проверено не
+            // глазами: настоящий `@payloadcms/email-nodemailer` отправляет письмо
+            // в локальный SMTP-сток, и диалог EHLO → AUTH PLAIN → MAIL FROM → RCPT
+            // TO → DATA с ответом 250 приходит целиком. Тип уедут, когда
+            // `@payloadcms/email-nodemailer` починит свои декларации.
+          } as NodemailerTransportOptions,
         }),
       }
     : {}),
