@@ -73,6 +73,7 @@ export interface Config {
     posts: Post;
     media: Media;
     users: User;
+    visitors: Visitor;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -86,6 +87,7 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    visitors: VisitorsSelect<false> | VisitorsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -366,6 +368,41 @@ export interface User {
   collection: 'users';
 }
 /**
+ * Записи посетителей. Идентификатор — sub ЕСА, паролей у сайта нет. Не правьте esaSub вручную: это ключ связи с входом.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "visitors".
+ */
+export interface Visitor {
+  id: number;
+  /**
+   * Непрозрачный идентификатор от ЕСА. Приходит только вместе с токеном.
+   */
+  esaSub: string;
+  /**
+   * Имя, которое посетитель сам вводит для сайта. Мы не переносим имя из профиля ЕСА — это разные вещи.
+   */
+  displayName?: string | null;
+  /**
+   * Заполняет сам посетитель, если хочет, чтобы ему ответили. Пустое поле — не ошибка.
+   */
+  contacts?: {
+    /**
+     * Проверяется отправкой письма, а не форматом.
+     */
+    email?: string | null;
+    phone?: string | null;
+  };
+  subscribed?: boolean | null;
+  /**
+   * Проставляется сервером, вручную не правится. Ретеншн — 12 месяцев с последнего входа.
+   */
+  unsubscribedAt?: string | null;
+  lastSeenAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -412,6 +449,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'visitors';
+        value: number | Visitor;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -620,6 +661,25 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "visitors_select".
+ */
+export interface VisitorsSelect<T extends boolean = true> {
+  esaSub?: T;
+  displayName?: T;
+  contacts?:
+    | T
+    | {
+        email?: T;
+        phone?: T;
+      };
+  subscribed?: T;
+  unsubscribedAt?: T;
+  lastSeenAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

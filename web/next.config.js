@@ -3,6 +3,12 @@ import { fileURLToPath } from 'url'
 
 import { withPayload } from '@payloadcms/next/withPayload'
 
+// Константы из `src/lib/esa.ts` импортом НЕ берём: конфиг Next читается и на
+// этапе, где TypeScript ещё не собран. Дублирование — источник расхождения, а
+// потому оно проверяется тестом ниже: при divergence origin в CSP разошёлся бы
+// с адресом, на который ЕСА реально отдаёт токен, и вход сломался бы молча.
+const ESA_ORIGIN_PUNYCODE = 'https://xn--b1ae3a1a.xn--80adkdyec4j.xn--p1ai'
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const NEXT_PUBLIC_SERVER_URL =
@@ -42,10 +48,13 @@ const nextConfig = {
         // которую пришлось бы разрешить до 'unsafe-inline', не защищает ни от чего —
         // лучше её отсутствие, чем видимость защиты.
         //
-        // `form-action 'self'` без origin ЕСА: ЕСА нам n/a с 30.07 (пользовательского
-        // входа нет и не планируется, админка Payload под требование не попадает), а
-        // своих форм на сайте нет вовсе — единственная форма это вход в админку, и
-        // постит она на свой же origin.
+        // `form-action` — свой origin И origin ЕСА (D-095, вход посетителей). Раньше
+        // стояло только `'self'` с пометкой «ЕСА нам n/a с 30.07»; решение владельца
+        // 15.09 это отменило. Origin ЕСА в punycode — браузер сравнивает схему,
+        // хост и порт, кириллический хост он не примет (G133/G134).
+        //
+        // `frame-ancestors 'self'`: встраивать сайт в чужую страницу нельзя даже
+        // с формой входа — зеркало сайта с формой ЕСА внутри было бы фишингом.
         //
         // HSTS без `includeSubDomains`: соседи по вмалмыже.рф живут своей жизнью, и
         // навязывать им политику с нашего хоста мы не вправе.
@@ -53,7 +62,10 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "frame-ancestors 'self'; form-action 'self'; base-uri 'self'",
+            value:
+              "frame-ancestors 'self'; " +
+              `form-action 'self' ${ESA_ORIGIN_PUNYCODE}; ` +
+              "base-uri 'self'",
           },
           { key: 'Strict-Transport-Security', value: 'max-age=31536000' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
