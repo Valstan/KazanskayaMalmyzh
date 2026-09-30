@@ -30,7 +30,7 @@ gh pr list --state open
 
 Если `git status` непустой помимо handoff/доков:
 1. **Гейты** (если трогался код): `corepack pnpm -C web typecheck && corepack pnpm -C web lint` (+ `next build` при существенной правке; локальный build — БЕЗ `STANDALONE_BUILD`).
-2. **NUL-чек** (грабля харнесса): `git add -A && git diff --cached --stat` — любой исходник как `Bin` → вычистить NUL, пересохранить UTF-8 (см. `/obriv` шаг 3).
+2. **NUL-чек** (грабля харнесса): `git add -A && git diff --cached --stat` — любой исходник как `Bin` → вычистить NUL, пересохранить UTF-8. Смысл проверки: PowerShell 5.1 пишет файлы с BOM, и GitHub перестаёт видеть, например, `workflow_dispatch`, — а файл при этом выглядит нормально в редакторе. Править такие файлы только инструментами записи, не `Set-Content`.
 3. Ветка `feat/ fix/ chore/ docs/` → коммит → `git push -u origin <ветка>` → `gh pr create` → зелёные гейты → `gh pr merge --squash`.
    - ⚠️ Мерж кода в `main` **авто-деплоит на прод** (`deploy-prod.yml`; `docs/**`, `mailbox/**`, `*.md`, `.github/**`, `.claude/**` — не триггерят).
    - ⚠️ Новые Payload-миграции: применить на прод ВРУЧНУЮ до деплоя (#017-паттерн Казанской: SSH-туннель к PG бокса + `payload migrate` с dev-машины), затем деплой через `gh workflow run deploy-prod.yml` (migration-guard пропускает dispatch).

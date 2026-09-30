@@ -65,7 +65,8 @@
 
 - **`/start`** — старт сессии: синхра только этого репо, mailbox-check brain через GitHub API, handoff, re-триаж PENDING.
 - **`/close_session`** — финализация: handoff → docs-PR, sync-гейт (всё на origin).
-- **`/obriv`** — восстановление после обрыва связи (ground-truth реконструкция, NUL-чек).
+
+`/obriv` **снят решением владельца D-066** (письмо brain `2026-09-02-d066-obriv-removed-session-start-hook`): после обрыва восстанавливаемся обычным `/start` — он уже делает ground-truth от `origin` (sync → mailbox → handoff → PENDING), а отдельная команда держала вторую копию этого же ритуала. Всё, что было в ней кроме этого (NUL-чек), переехало в `/close_session` шаг 3.
 
 ## Экосистема: сервисы и секреты (карта интеграций)
 
