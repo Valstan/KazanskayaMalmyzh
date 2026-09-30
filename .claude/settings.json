@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sed -n '1,40p' docs/SESSION_HANDOFF.md; echo '--- GIT ---'; git status --porcelain=v1 -b; git log --oneline -5"
+          }
+        ]
+      }
+    ]
+  }
+}
