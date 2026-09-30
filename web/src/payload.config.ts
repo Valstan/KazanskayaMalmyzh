@@ -12,6 +12,7 @@ import { Gallery } from './collections/Gallery'
 import { Media } from './collections/Media'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
+import { Visitors } from './collections/Visitors'
 import { SESSION_COOKIE_PREFIX, SITE_NAME, SITE_URL } from './lib/site'
 import { FestivalMap } from './globals/FestivalMap'
 
@@ -43,7 +44,7 @@ export default buildConfig({
     // вручную на этапе деплоя (паттерн Sabantuy, #017).
     push: true,
   }),
-  collections: [Pages, Events, Gallery, Posts, Media, Users],
+  collections: [Pages, Events, Gallery, Posts, Media, Users, Visitors],
   globals: [FestivalMap],
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''].filter(Boolean),
   // Имя сессионной cookie с префиксом `__Host-` (#285, письмо brain 05.09).
