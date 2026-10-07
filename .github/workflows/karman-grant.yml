@@ -67,23 +67,31 @@ jobs:
 
           # 3. GET /grants: тело — в файл, в лог — ТОЛЬКО имена полей и типы.
           #    Сырое тело не печатаем никогда: в нём могут лежать значения.
+          #    Форма ответа (прогон 37626890484): объект {issued, received, slug} —
+          #    массивы лежат в .issued (нами выданные) и .received (нам выданные),
+          #    а не в .grants/.items/.data, как ждал фильтр деплоя. Поэтому он
+          #    ни разу не сработал, и всю работу держал 409 от КАРМАНА.
           GCODE="$(curl -s -o /tmp/vault-grants.json -w '%{http_code}' "$VAULT/grants" -H "Authorization: Bearer $TOKEN" || true)"
           echo "GET /grants: $GCODE"
           if [ "$GCODE" = "200" ]; then
             echo "--- top-level ---"
-            jq '{type: type, keys: (if type == "object" then keys else null end), length: (if type == "array" then length else null end)}' /tmp/vault-grants.json
-            echo "--- items: field names + value types (no values) ---"
-            jq 'if type == "array" then . else (.grants // .items // .data // []) end | {count: length, items: [.[] | {keys: keys, types: ([to_entries[] | {key: .key, type: (.value | type)}])}]}' /tmp/vault-grants.json
-            echo "--- route metadata: ids + key names + state-like fields ---"
-            jq 'if type == "array" then . else (.grants // .items // .data // []) end | [.[] | . as $g | {id: ($g.id // null), key_name: (($g.key // $g.secret_key // $g.name // null)), state_like: ([$g | to_entries[] | select(.key | test("state|status"; "i")) | {field: .key, type: (.value | type), value: (if ($g.id == 16 or $g.id == "16") then .value else null end)}])}]' /tmp/vault-grants.json
+            jq '{type: type, keys: (if type == "object" then keys else null end)}' /tmp/vault-grants.json
+            echo "--- issued: field names + value types (no values) ---"
+            jq '{count: (.issued | length), items: ([.issued[] | {keys: keys, types: ([to_entries[] | {key: .key, type: (.value | type)}])}])}' /tmp/vault-grants.json
+            echo "--- received: field names + value types (no values) ---"
+            jq '{count: (.received | length), items: ([.received[] | {keys: keys, types: ([to_entries[] | {key: .key, type: (.value | type)}])}])}' /tmp/vault-grants.json
+            echo "--- route metadata: ids + key names + states ---"
+            jq '({issued: (.issued // []), received: (.received // [])} | to_entries | [.[] | .key as $side | .value[] | . as $g | {side: $side, id: ($g.id // null), key_name: (($g.key // $g.secret_key // $g.name // null)), state_like: ([$g | to_entries[] | select(.key | test("state|status"; "i")) | {field: .key, type: (.value | type), value: .value}])}])' /tmp/vault-grants.json
             echo "--- entry id=16: field names only ---"
-            jq 'if type == "array" then . else (.grants // .items // .data // []) end | [.[] | select(.id == 16 or .id == "16") | {keys: keys}]' /tmp/vault-grants.json
+            jq '[(.issued // []) + (.received // []) | .[] | select(.id == 16 or .id == "16") | {keys: keys}]' /tmp/vault-grants.json
           fi
 
           # 4. GET корня комнаты: код + имена полей. Read-only на своей комнате.
+          #    Форма (прогон 37626890484): объект {secrets}. Печатаем только
+          #    ИМЕНА ключей — пришедший grant виден как имя, значение не читаем.
           RCODE="$(curl -s -o /tmp/vault-root.json -w '%{http_code}' "$VAULT" -H "Authorization: Bearer $TOKEN" || true)"
           echo "GET room root: $RCODE"
           if [ "$RCODE" = "200" ]; then
-            echo "--- room root: field names + value types (no values) ---"
-            jq '{type: type, keys: (if type == "object" then keys else null end)}' /tmp/vault-root.json
+            echo "--- room root: secret names only (no values) ---"
+            jq '{type: type, keys: (if type == "object" then keys else null end), secret_names: (if (.secrets // null) | type == "object" then (.secrets | keys) else {secrets_type: ((.secrets // null) | type)} end)}' /tmp/vault-root.json
           fi
