@@ -62,7 +62,7 @@ jobs:
             exit 0
           fi
           echo "::add-mask::$TOKEN"
-          trap 'curl -sf -X DELETE "$VAULT/session" -H "Authorization: Bearer $TOKEN" >/dev/null 2>&1 || true; rm -f /tmp/vault-grants.json /tmp/vault-root.json' EXIT
+          trap 'curl -sf -X DELETE "$VAULT/session" -H "Authorization: Bearer $TOKEN" >/dev/null 2>&1 || true; rm -f /tmp/vault-grants.json /tmp/vault-root.json /tmp/vault-openapi.json' EXIT
           echo "сессия открыта: 201"
 
           # 3. GET /grants: тело — в файл, в лог — ТОЛЬКО имена полей и типы.
@@ -80,8 +80,10 @@ jobs:
             jq '{count: (.issued | length), items: ([.issued[] | {keys: keys, types: ([to_entries[] | {key: .key, type: (.value | type)}])}])}' /tmp/vault-grants.json
             echo "--- received: field names + value types (no values) ---"
             jq '{count: (.received | length), items: ([.received[] | {keys: keys, types: ([to_entries[] | {key: .key, type: (.value | type)}])}])}' /tmp/vault-grants.json
-            echo "--- route metadata: ids + key names + states ---"
-            jq '({issued: (.issued // []), received: (.received // [])} | to_entries | [.[] | .key as $side | .value[] | . as $g | {side: $side, id: ($g.id // null), key_name: (($g.key // $g.secret_key // $g.name // null)), state_like: ([$g | to_entries[] | select(.key | test("state|status"; "i")) | {field: .key, type: (.value | type), value: .value}])}])' /tmp/vault-grants.json
+            echo "--- route metadata: side + id + identifiers + state (no secret values) ---"
+            jq '({issued: (.issued // []), received: (.received // [])} | to_entries | [.[] | .key as $side | .value[] | . as $g | {side: $side, id: ($g.id // null), from: ($g.sourceSlug // null), to: ($g.targetSlug // null), key_name: ($g.sourceKey // null), alias: ($g.aliasKey // null), note: ($g.note // null), shadowed: ($g.shadowed // null), created: ($g.createdAt // null), state: ([$g | to_entries[] | select(.key | test("^state$"; "i")) | .value])}])' /tmp/vault-grants.json
+            echo "--- room slug ---"
+            jq -r '{slug: .slug}' /tmp/vault-grants.json
             echo "--- entry id=16: field names only ---"
             jq '[(.issued // []) + (.received // []) | .[] | select(.id == 16 or .id == "16") | {keys: keys}]' /tmp/vault-grants.json
           fi
@@ -94,4 +96,15 @@ jobs:
           if [ "$RCODE" = "200" ]; then
             echo "--- room root: secret names only (no values) ---"
             jq '{type: type, keys: (if type == "object" then keys else null end), secret_names: (if (.secrets // null) | type == "object" then (.secrets | keys) else {secrets_type: ((.secrets // null) | type)} end)}' /tmp/vault-root.json
+          fi
+
+          # 5. Discovery контракта read-only: стандартный путь OpenAPI-схемы.
+          #    Схема — не секреты: печатаем только пути и методы. Если схемы нет
+          #    (не 200) — это тоже ответ: точный вызов accept спросим у brain
+          #    письмом, а не угадаем в коде.
+          OCODE="$(curl -s -o /tmp/vault-openapi.json -w '%{http_code}' "$VAULT/openapi.json" -H "Authorization: Bearer $TOKEN" || true)"
+          echo "GET /openapi.json: $OCODE"
+          if [ "$OCODE" = "200" ]; then
+            echo "--- openapi: paths + methods only ---"
+            jq '{paths: (.paths | keys), methods: (.paths | to_entries | map({path: .key, methods: (.value | keys)}))}' /tmp/vault-openapi.json
           fi
