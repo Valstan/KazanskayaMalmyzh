@@ -1,0 +1,89 @@
+name: KARMAN grant probe
+
+# Ручной инструмент двустороннего маршрута grant'ов
+# (письма brain 03.09, 02.10, 05.10; мандат: принять grant id=16 до 07.10).
+#
+# Только workflow_dispatch: сессия КАРМАНа открывается OIDC-удостоверением
+# прогона, а subject_pattern КАРМАНа пропускает только refs/heads/main —
+# запускать строго с main (на PR-прогоне будет 401 по построению).
+#
+# Прод не трогает по построению: SSH, env-файла юнита и рестарта здесь нет.
+# Значения секретов в лог не попадают никогда (ADR-0006): печатаются только
+# имена полей, типы значений и коды ответов. Состояния grant'ов
+# (pending/accepted/...) — метаданные маршрута, не секреты: их печатать
+# можно и нужно, иначе accept не подтвердить.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # Паспортный путь ADR-0012 (D-061): без этого права ACTIONS_ID_TOKEN_REQUEST_*
+  # в шаге не появятся вовсе.
+  id-token: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Passport → session → field-names probe
+        env:
+          VAULT: ${{ secrets.SECRETS_VAULT_URL }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${VAULT:-}" ]; then
+            echo "::warning::secrets.SECRETS_VAULT_URL не задан — проба пропущена"
+            exit 0
+          fi
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            echo "::warning::OIDC недоступен (нужно permissions: id-token: write) — проба пропущена"
+            exit 0
+          fi
+
+          # 1. Удостоверение прогона. audience — РОВНО эта строка, иначе 401 без пояснений.
+          ASSERTION="$(curl -sf -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=karman-vault" | jq -r '.value // empty')"
+          if [ -z "$ASSERTION" ]; then
+            echo "::warning::удостоверение прогона не выдано — проба пропущена"
+            exit 0
+          fi
+          echo "::add-mask::$ASSERTION"
+
+          # 2. Обмен удостоверения на сессионный токен комнаты (TTL 60 мин).
+          #    ⚠️ trap … EXIT ровно ОДИН: второй молча заменил бы первый
+          #    и самоотзыв сессии исчез бы.
+          SESSION="$(curl -sf -X POST "$VAULT/session" -H "Authorization: Bearer $ASSERTION" || true)"
+          TOKEN="$(printf '%s' "$SESSION" | jq -r '.token // empty' 2>/dev/null || true)"
+          if [ -z "$TOKEN" ]; then
+            echo "::warning::сессия не открыта (вне main это 401 по построению) — проба пропущена"
+            exit 0
+          fi
+          echo "::add-mask::$TOKEN"
+          trap 'curl -sf -X DELETE "$VAULT/session" -H "Authorization: Bearer $TOKEN" >/dev/null 2>&1 || true; rm -f /tmp/vault-grants.json /tmp/vault-root.json' EXIT
+          echo "сессия открыта: 201"
+
+          # 3. GET /grants: тело — в файл, в лог — ТОЛЬКО имена полей и типы.
+          #    Сырое тело не печатаем никогда: в нём могут лежать значения.
+          GCODE="$(curl -s -o /tmp/vault-grants.json -w '%{http_code}' "$VAULT/grants" -H "Authorization: Bearer $TOKEN" || true)"
+          echo "GET /grants: $GCODE"
+          if [ "$GCODE" = "200" ]; then
+            echo "--- top-level ---"
+            jq '{type: type, keys: (if type == "object" then keys else null end), length: (if type == "array" then length else null end)}' /tmp/vault-grants.json
+            echo "--- items: field names + value types (no values) ---"
+            jq 'if type == "array" then . else (.grants // .items // .data // []) end | {count: length, items: [.[] | {keys: keys, types: ([to_entries[] | {key: .key, type: (.value | type)}])}]}' /tmp/vault-grants.json
+            echo "--- route metadata: ids + key names + state-like fields ---"
+            jq 'if type == "array" then . else (.grants // .items // .data // []) end | [.[] | . as $g | {id: ($g.id // null), key_name: (($g.key // $g.secret_key // $g.name // null)), state_like: ([$g | to_entries[] | select(.key | test("state|status"; "i")) | {field: .key, type: (.value | type), value: (if ($g.id == 16 or $g.id == "16") then .value else null end)}])}]' /tmp/vault-grants.json
+            echo "--- entry id=16: field names only ---"
+            jq 'if type == "array" then . else (.grants // .items // .data // []) end | [.[] | select(.id == 16 or .id == "16") | {keys: keys}]' /tmp/vault-grants.json
+          fi
+
+          # 4. GET корня комнаты: код + имена полей. Read-only на своей комнате.
+          RCODE="$(curl -s -o /tmp/vault-root.json -w '%{http_code}' "$VAULT" -H "Authorization: Bearer $TOKEN" || true)"
+          echo "GET room root: $RCODE"
+          if [ "$RCODE" = "200" ]; then
+            echo "--- room root: field names + value types (no values) ---"
+            jq '{type: type, keys: (if type == "object" then keys else null end)}' /tmp/vault-root.json
+          fi
