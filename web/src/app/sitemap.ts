@@ -6,9 +6,14 @@ import { entryForPath, type SitemapDates } from '../lib/sitemap'
 import { SITE_URL } from '../lib/site'
 import { yearsWithPage } from '../lib/years'
 
+// Даты берутся из живой БД — значит, роут обязан быть динамическим, иначе
+// Next запечёт sitemap один раз при сборке (против пустой сборочной БД —
+// класс G203) и будет отдавать окаменелость. Часового окна свежести достаточно:
+// афиша меняется не чаще, а каждый хит краулера в БД не ходит.
+export const revalidate = 3600
+
 /** max updatedAt опубликованной коллекции. БД недоступна — null, а не ложь. */
-const maxUpdatedAt = async (collection: 'events' | 'posts'): Promise<Date | null> => {
-  try {
+const maxUpdatedAt = async (collection: 'events' | 'posts'): Promise<Date | null> => {  try {
     const payload = await getPayload({ config })
     const res = await payload.find({
       collection,
