@@ -15,6 +15,12 @@
 // поддерживается осознанно; срок короткий, а потеря доступа для посетителя
 // безобидна. Если понадобится мгновенный отзыв — это отдельное решение с
 // blacklist'ом и его ценой, не молчаливая подмена проверки.
+//
+// ⚠️ Открытый вопрос D-095 части 2: мандат 15.09 требует от ЕСА OIDC с RS256/JWKS,
+// а `verifyEsaToken` ниже проверяет HS256. Пока вопрос не закрыт, настоящий токен
+// ЕСА будет отвергнут (fail-closed: алгоритм чужой → `null` → доступа нет), и вход
+// не заработает. Это осознанно безопасное состояние, а не баг: молча принимать
+// чужие подписи нельзя. Закрытие — в маршруте обмена кода, не здесь.
 
 const ESA_ORIGIN = 'https://xn--b1ae3a1a.xn--80adkdyec4j.xn--p1ai'
 
@@ -126,8 +132,8 @@ const timingSafeEqual = (a: string, b: string): boolean => {
 
 export const esaCookieName = 'esa_session'
 
-/** Достаёт `sub` из токена в запросе, не проверяя подпись — только для логов и отладки. */
-export const visitorSubFromRequest = (req: {
+/** Сырой токен из запроса (cookie или заголовок). Подпись НЕ проверяет. */
+export const visitorTokenFromRequest = (req: {
   headers: { get?: (name: string) => string | null }
   cookies?: Record<string, string | undefined>
 }): string | null => {
@@ -139,6 +145,15 @@ export const visitorSubFromRequest = (req: {
       .find((part) => part.startsWith(`${esaCookieName}=`))
       ?.slice(esaCookieName.length + 1) ??
     null
+  return raw && raw.length > 0 ? raw : null
+}
+
+/** Достаёт `sub` из токена в запросе, не проверяя подпись — только для логов и отладки. */
+export const visitorSubFromRequest = (req: {
+  headers: { get?: (name: string) => string | null }
+  cookies?: Record<string, string | undefined>
+}): string | null => {
+  const raw = visitorTokenFromRequest(req)
   if (!raw) return null
   const decoded = decodeSegment(raw.split('.')[1] ?? '')
   const sub = decoded?.sub
