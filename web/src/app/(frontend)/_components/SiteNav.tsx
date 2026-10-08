@@ -13,7 +13,8 @@ import { SERVICES_CATALOG_URL } from '../../../lib/site'
 const NAV = [
   { href: '/', label: 'Главная' },
   { href: '/program', label: 'Программа' },
-  { href: '/news', label: 'Новости' },
+  // /news скрыт из меню, пока лента пуста (вскрытие 08.10): пункт меню не должен
+  // вести в пустоту. Маршрут, sitemap и приёмник живы; вернуть вместе с первой новостью.
   { href: '/history', label: 'История' },
   { href: '/years', label: 'Как это было' },
   { href: '/map', label: 'Карта' },
@@ -60,7 +61,10 @@ export function SiteNav() {
             key={item.href}
             href={item.href}
             aria-current={pathname === item.href ? 'page' : undefined}
-            className={item.href === '/program' ? 'site-nav__cta' : undefined}
+            // Главный визуальный CTA — на раздел с живым содержимым под текущий
+            // статус (летопись), а не на расписание несостоявшегося праздника.
+            // Когда владелец назовёт дату: вернуть CTA на /program и /news в меню.
+            className={item.href === '/years' ? 'site-nav__cta' : undefined}
           >
             {item.label}
           </Link>

@@ -39,6 +39,10 @@ export const metadata: Metadata = {
     url: SITE_URL,
     locale: 'ru_RU',
     type: 'website',
+    // og:image не было вовсе — репосты уходили слепыми (вскрытие 08.10).
+    // Берём вневременное шествие у собора, а не афишу с несостоявшейся датой.
+    // twitter:image Next доклеит сам из openGraph.images.
+    images: [{ url: '/decor/oa-03.jpg' }],
   },
 }
 
@@ -82,7 +86,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               )}
             </p>
             <p>
-              Оргкомитет: карнавал и ремесленники — (83347) 2‑22‑28, торговля — (83347) 2‑28‑83.
+              Оргкомитет: карнавал и ремесленники — <a href="tel:+78334722228">(83347) 2‑22‑28</a>,
+              торговля — <a href="tel:+78334722883">(83347) 2‑28‑83</a>.
             </p>
             <p className="site-footer__links">
               <Link href="/istochniki-foto">Источники фотографий</Link>
