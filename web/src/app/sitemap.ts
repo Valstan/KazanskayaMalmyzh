@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { getPayload } from 'payload'
+import { getPayload, type Payload } from 'payload'
 
 import config from '@payload-config'
 import { entryForPath, type SitemapDates } from '../lib/sitemap'
@@ -13,8 +13,11 @@ import { yearsWithPage } from '../lib/years'
 export const revalidate = 3600
 
 /** max updatedAt опубликованной коллекции. БД недоступна — null, а не ложь. */
-const maxUpdatedAt = async (collection: 'events' | 'posts'): Promise<Date | null> => {  try {
-    const payload = await getPayload({ config })
+const maxUpdatedAt = async (
+  payload: Payload,
+  collection: 'events' | 'posts',
+): Promise<Date | null> => {
+  try {
     const res = await payload.find({
       collection,
       where: { _status: { equals: 'published' } },
@@ -25,13 +28,23 @@ const maxUpdatedAt = async (collection: 'events' | 'posts'): Promise<Date | null
     })
     const updatedAt = res.docs[0]?.updatedAt
     return typeof updatedAt === 'string' ? new Date(updatedAt) : null
-  } catch {
+  } catch (error) {
+    // Молчать здесь — ровно класс «403 без тела»: отказ неотличим от «данных
+    // нет». Путь редкий (только когда БД недоступна), в журнале — одна строка.
+    console.warn('[sitemap] maxUpdatedAt failed:', error instanceof Error ? error.message : error)
     return null
   }
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [events, posts] = await Promise.all([maxUpdatedAt('events'), maxUpdatedAt('posts')])
+  // Один getPayload на роут: параллельная инициализация Payload из двух
+  // мест — гонка, после которой оба вызова лежат (наблюдали пустые даты
+  // при Promise.all двух инициализаций 08.10).
+  const payload = await getPayload({ config })
+  const [events, posts] = await Promise.all([
+    maxUpdatedAt(payload, 'events'),
+    maxUpdatedAt(payload, 'posts'),
+  ])
   const dates: SitemapDates = { events, posts }
   const paths = [
     '/',
