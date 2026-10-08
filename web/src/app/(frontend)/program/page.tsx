@@ -156,7 +156,8 @@ export default async function ProgramPage() {
             <details className="faq__item">
               <summary>Как участвовать в карнавале или торговле?</summary>
               <p className="faq__answer">
-                Оргкомитет: карнавал и ремесленники — (83347) 2‑22‑28, торговля — (83347) 2‑28‑83.
+                Оргкомитет: карнавал и ремесленники — <a href="tel:+78334722228">(83347) 2‑22‑28</a>,
+                торговля — <a href="tel:+78334722883">(83347) 2‑28‑83</a>.
               </p>
             </details>
           </div>
