@@ -542,6 +542,66 @@
   margin-top: 1.2rem;
 }
 
+/* Форма «позвать на дату» (вскрытие 08.10): живёт на тёмной фотополосе,
+   поэтому поле — светлое, текст под ним — приглушённый белый. */
+.notify-form {
+  margin-top: 1.4rem;
+  max-width: 34rem;
+}
+
+.notify-form__label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.notify-form__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.notify-form__row input[type='email'] {
+  flex: 1 1 14rem;
+  padding: 0.7rem 0.9rem;
+  border: 2px solid rgba(255, 255, 255, 0.72);
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.94);
+  color: #222;
+  font-size: 1rem;
+}
+
+/* Ловушка для ботов: поле есть в DOM, человек его не видит. */
+.notify-form__trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.notify-form__status {
+  margin-top: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.notify-form__status--error {
+  color: #ffd9a8;
+}
+
+.notify-form__note {
+  margin-top: 0.5rem;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.notify-form__note a {
+  color: #fff;
+}
+
 .btn--outline-light {
   border-color: rgba(255, 255, 255, 0.72);
   background: rgba(255, 255, 255, 0.08);

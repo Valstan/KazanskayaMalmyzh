@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import { festivalJsonLd } from '../../lib/seo'
 import { HomeHero } from './_components/Hero'
+import { NotifyForm } from './_components/NotifyForm'
 
 export const revalidate = 3600
 
@@ -179,6 +180,7 @@ export default function HomePage() {
             <Link className="btn btn--gold" href="/years">Летопись ярмарок →</Link>
             <Link className="btn btn--outline-light" href="/gallery">Фотогалерея →</Link>
           </div>
+          <NotifyForm />
         </div>
       </section>
     </main>
