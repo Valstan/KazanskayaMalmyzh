@@ -1,7 +1,7 @@
 name: KARMAN grant probe
 
 # Ручной инструмент двустороннего маршрута grant'ов
-# (письма brain 03.09, 02.10, 05.10; мандат: принять grant id=16 до 07.10).
+# (письма brain 03.09, 02.10, 05.10, 09.10; мандат: принять grant id=16).
 #
 # Только workflow_dispatch: сессия КАРМАНа открывается OIDC-удостоверением
 # прогона, а subject_pattern КАРМАНа пропускает только refs/heads/main —
@@ -15,6 +15,17 @@ name: KARMAN grant probe
 
 on:
   workflow_dispatch:
+    inputs:
+      grant_id:
+        description: "id grant'а для accept (по умолчанию 16 — ESA_CLIENT_SECRET_KAZANSKAYA от setka)"
+        required: true
+        default: "16"
+        type: string
+      secret_key:
+        description: "Имя секрета, наличие которого проверяем после accept (значение НЕ читаем и не печатаем)"
+        required: true
+        default: "ESA_CLIENT_SECRET_KAZANSKAYA"
+        type: string
 
 permissions:
   contents: read
@@ -28,6 +39,88 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - name: "Passport → session → accept grant (brain 09.10, точный вызов)"
+        env:
+          VAULT: ${{ secrets.SECRETS_VAULT_URL }}
+          GRANT_ID: ${{ inputs.grant_id }}
+          SECRET_KEY: ${{ inputs.secret_key }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${VAULT:-}" ]; then
+            echo "::warning::secrets.SECRETS_VAULT_URL не задан — accept пропущен"
+            exit 0
+          fi
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ] || [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            echo "::warning::OIDC недоступен (нужно permissions: id-token: write) — accept пропущен"
+            exit 0
+          fi
+          case "$GRANT_ID" in
+            "" | *[!0-9]*) echo "::error::grant_id должен быть числом, получено: [$GRANT_ID]"; exit 1 ;;
+          esac
+
+          # 1. Удостоверение прогона. audience — РОВНО эта строка, иначе 401 без пояснений.
+          ASSERTION="$(curl -sf -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=karman-vault" | jq -r '.value // empty')"
+          if [ -z "$ASSERTION" ]; then
+            echo "::warning::удостоверение прогона не выдано — accept пропущен"
+            exit 0
+          fi
+          echo "::add-mask::$ASSERTION"
+
+          # 2. Сессия комнаты (TTL 60 мин). trap … EXIT ровно ОДИН на шаг:
+          #    самоотзыв сессии + удаление временных файлов.
+          SESSION="$(curl -sf -X POST "$VAULT/session" -H "Authorization: Bearer $ASSERTION" || true)"
+          TOKEN="$(printf '%s' "$SESSION" | jq -r '.token // empty' 2>/dev/null || true)"
+          if [ -z "$TOKEN" ]; then
+            echo "::warning::сессия не открыта (вне main это 401 по построению) — accept пропущен"
+            exit 0
+          fi
+          echo "::add-mask::$TOKEN"
+          trap 'curl -sf -X DELETE "$VAULT/session" -H "Authorization: Bearer $TOKEN" >/dev/null 2>&1 || true; rm -f /tmp/vault-pending.json /tmp/vault-accept.json /tmp/vault-secret.json' EXIT
+          echo "сессия открыта: 201"
+
+          # 3. Где лежит нужный pending: в .received (нам выданные). Печатаем
+          #    только идентификаторы и состояние — не значения.
+          PCODE="$(curl -s -o /tmp/vault-pending.json -w '%{http_code}' "$VAULT/grants?pending=1" -H "Authorization: Bearer $TOKEN" || true)"
+          echo "GET /grants?pending=1: $PCODE"
+          if [ "$PCODE" = "200" ]; then
+            jq --argjson id "$GRANT_ID" '[({issued: (.issued // []), received: (.received // [])} | to_entries | [.[] | .key as $side | .value[] | {side: $side, id: .id, from: .sourceSlug, to: .targetSlug, key_name: .sourceKey, created: .createdAt, state: ([to_entries[] | select(.key | test("^state$"; "i")) | .value])}]) | .[] | select(.id == $id)]' /tmp/vault-pending.json
+          else
+            echo "::warning::список pending недочитен (код $PCODE) — accept всё равно пробуем, решит код ответа"
+          fi
+
+          # 4. Accept. Тело НЕ отправляем (brain 09.10): успех — 200, повтор — 409.
+          #    Повтор — не сбой: accept идемпотентен по построению пути.
+          ACODE="$(curl -s -o /tmp/vault-accept.json -w '%{http_code}' -X POST "$VAULT/grants/$GRANT_ID/accept" -H "Authorization: Bearer $TOKEN" || true)"
+          echo "POST /grants/$GRANT_ID/accept: $ACODE"
+          case "$ACODE" in
+            200)
+              echo "accept: принят"
+              jq '{ok: (.ok // null), type: type, keys: (if type == "object" then keys else null end)}' /tmp/vault-accept.json
+              ;;
+            409)
+              echo "accept: 409 — уже был принят ранее, это не сбой"
+              ;;
+            *)
+              echo "::error::accept вернул $ACODE — дальше не идём"
+              exit 1
+              ;;
+          esac
+
+          # 5. Наличие секрета в комнате после accept. Значение НЕ читаем и НЕ
+          #    печатаем (ADR-0006): только имена ключей ответа и факт наличия
+          #    нужного имени. Env юнита — отдельным шагом деплоя, вместе с
+          #    маршрутами обмена кода (D-095 ч.2).
+          SCODE="$(curl -s -o /tmp/vault-secret.json -w '%{http_code}' "$VAULT/secrets?key=$SECRET_KEY" -H "Authorization: Bearer $TOKEN" || true)"
+          echo "GET /secrets?key=$SECRET_KEY: $SCODE"
+          if [ "$SCODE" = "200" ]; then
+            jq --arg k "$SECRET_KEY" '{type: type, keys: (if type == "object" then keys else null end), key_present: ([.. | objects | has($k)] | any)}' /tmp/vault-secret.json
+          else
+            echo "::error::секрет $SECRET_KEY не прочитан (код $SCODE)"
+            exit 1
+          fi
+
       - name: Passport → session → field-names probe
         env:
           VAULT: ${{ secrets.SECRETS_VAULT_URL }}
