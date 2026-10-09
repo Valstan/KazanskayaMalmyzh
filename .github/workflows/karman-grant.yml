@@ -77,7 +77,7 @@ jobs:
             exit 0
           fi
           echo "::add-mask::$TOKEN"
-          trap 'curl -sf -X DELETE "$VAULT/session" -H "Authorization: Bearer $TOKEN" >/dev/null 2>&1 || true; rm -f /tmp/vault-pending.json /tmp/vault-accept.json /tmp/vault-secret.json' EXIT
+          trap 'curl -sf -X DELETE "$VAULT/session" -H "Authorization: Bearer $TOKEN" >/dev/null 2>&1 || true; rm -f /tmp/vault-pending.json /tmp/vault-accept.json /tmp/vault-secret.json /tmp/vault-secret-path.json /tmp/vault-room.json' EXIT
           echo "сессия открыта: 201"
 
           # 3. Где лежит нужный pending: в .received (нам выданные). Печатаем
@@ -109,17 +109,32 @@ jobs:
           esac
 
           # 5. Наличие секрета в комнате после accept. Значение НЕ читаем и НЕ
-          #    печатаем (ADR-0006): только имена ключей ответа и факт наличия
-          #    нужного имени. Env юнита — отдельным шагом деплоя, вместе с
-          #    маршрутами обмена кода (D-095 ч.2).
-          SCODE="$(curl -s -o /tmp/vault-secret.json -w '%{http_code}' "$VAULT/secrets?key=$SECRET_KEY" -H "Authorization: Bearer $TOKEN" || true)"
-          echo "GET /secrets?key=$SECRET_KEY: $SCODE"
-          if [ "$SCODE" = "200" ]; then
-            jq --arg k "$SECRET_KEY" '{type: type, keys: (if type == "object" then keys else null end), key_present: ([.. | objects | has($k)] | any)}' /tmp/vault-secret.json
-          else
-            echo "::error::секрет $SECRET_KEY не прочитан (код $SCODE)"
+          #    печатаем (ADR-0006): только имена ключей и коды ответов.
+          #    Форма чтения значения не установлена: письмо brain 09.10 даёт
+          #    GET /secrets?key=..., живой КАРМАН ответил на неё 404 (прогон
+          #    37953435657 — accept при этом прошёл 200). Пробуем обе известные
+          #    формы и печатаем коды; наличие доказываем по именам в корне
+          #    комнаты (та же форма, что в пробе).
+          QCODE="$(curl -s -o /tmp/vault-secret.json -w '%{http_code}' "$VAULT/secrets?key=$SECRET_KEY" -H "Authorization: Bearer $TOKEN" || true)"
+          echo "GET /secrets?key=$SECRET_KEY (форма письма brain 09.10): $QCODE"
+          FCODE="$(curl -s -o /tmp/vault-secret-path.json -w '%{http_code}' "$VAULT/secrets/$SECRET_KEY" -H "Authorization: Bearer $TOKEN" || true)"
+          echo "GET /secrets/$SECRET_KEY (форма с путём): $FCODE"
+          if [ "$FCODE" = "200" ]; then
+            jq --arg k "$SECRET_KEY" '{type: type, keys: (if type == "object" then keys else null end), key_present: ([.. | objects | has($k)] | any)}' /tmp/vault-secret-path.json
+          fi
+
+          RCODE="$(curl -s -o /tmp/vault-room.json -w '%{http_code}' "$VAULT" -H "Authorization: Bearer $TOKEN" || true)"
+          echo "GET room root: $RCODE"
+          if [ "$RCODE" != "200" ]; then
+            echo "::error::корень комнаты недочитен (код $RCODE)"
             exit 1
           fi
+          jq --arg k "$SECRET_KEY" '{secret_names: (if (.secrets // null) | type == "object" then (.secrets | keys) else {secrets_type: ((.secrets // null) | type)} end), key_present: (if (.secrets // null) | type == "object" then (.secrets | has($k)) else false end)}' /tmp/vault-room.json
+          if ! jq -e --arg k "$SECRET_KEY" '(.secrets // {}) | has($k)' /tmp/vault-room.json >/dev/null; then
+            echo "::error::секрет $SECRET_KEY не появился в комнате после accept"
+            exit 1
+          fi
+          echo "секрет $SECRET_KEY в комнате: присутствует (значение не читали)"
 
       - name: Passport → session → field-names probe
         env:
