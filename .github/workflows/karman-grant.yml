@@ -210,6 +210,15 @@ jobs:
           #    Схема — не секреты: печатаем только пути и методы. Если схемы нет
           #    (не 200) — это тоже ответ: точный вызов accept спросим у brain
           #    письмом, а не угадаем в коде.
+          # 6. POST /grants/16/accept — точный вызов из письма brain 2026-10-09-grant16-exact-call.md
+          ACODE="$(curl -sf -o /dev/null -w '%{http_code}' -X POST "$VAULT/api/secrets/grants/16/accept" -H "Authorization: Bearer $TOKEN" || true)"
+          echo "POST /grants/16/accept: $ACODE"
+
+          # 7. GET значения секрета для шага деплоя (форма шага 5 комнаты)
+          #    Печатаем только код ответа; значение не выводим в лог (ADR-0006).
+          SCODE="$(curl -sf -o /tmp/vault-secret.json -w '%{http_code}' "$VAULT/api/secrets?key=ESA_CLIENT_SECRET_KAZANSKAYA" -H "Authorization: Bearer $TOKEN" || true)"
+          echo "GET /secrets?key=ESA_CLIENT_SECRET_KAZANSKAYA: $SCODE"
+
           OCODE="$(curl -s -o /tmp/vault-openapi.json -w '%{http_code}' "$VAULT/openapi.json" -H "Authorization: Bearer $TOKEN" || true)"
           echo "GET /openapi.json: $OCODE"
           if [ "$OCODE" = "200" ]; then
