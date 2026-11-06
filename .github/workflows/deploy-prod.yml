@@ -196,7 +196,11 @@ jobs:
       # адаптер НЕ пушит схему (в конфиге push:true), иначе миграция
       # столкнулась бы с уже созданной таблицей.
       - name: Применить Payload-миграции (dispatch + apply_migrations)
-        if: github.event_name == 'workflow_dispatch' && inputs.apply_migrations == 'true'
+        # Для `type: boolean` контекст `inputs` отдаёт БУЛЕВО, а не строку —
+        # сравнение с 'true' всегда ложно, и шаг молча пропускался (проверено
+        # 06.11: прогон с флагом ушёл, а шаг был skipped). Поэтому сравниваем с
+        # булевым true; строковая форма из payload события — запасной путь.
+        if: github.event_name == 'workflow_dispatch' && (inputs.apply_migrations == true || github.event.inputs.apply_migrations == 'true')
         working-directory: web
         env:
           NODE_ENV: production
