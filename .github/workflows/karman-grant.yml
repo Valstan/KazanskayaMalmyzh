@@ -1,7 +1,7 @@
 name: KARMAN grant probe
 
 # Ручной инструмент двустороннего маршрута grant'ов
-# (письма brain 03.09, 02.10, 05.10, 09.10; мандат: принять grant id=16).
+# (письма brain 03.09, 02.10, 05.10, 09.10, 12.10, 13.10; мандат: принять grant id=16).
 #
 # Только workflow_dispatch: сессия КАРМАНа открывается OIDC-удостоверением
 # прогона, а subject_pattern КАРМАНа пропускает только refs/heads/main —
@@ -12,6 +12,17 @@ name: KARMAN grant probe
 # имена полей, типы значений и коды ответов. Состояния grant'ов
 # (pending/accepted/...) — метаданные маршрута, не секреты: их печатать
 # можно и нужно, иначе accept не подтвердить.
+#
+# ⚠️ ГЛАВНОЕ ПРАВИЛО ФАЙЛА (письма brain 12.10 и 13.10):
+#    `VAULT` = secrets.SECRETS_VAULT_URL УЖЕ заканчивается на `/api/secrets`.
+#    Пути строятся ОТ `VAULT`:
+#      значение секрета → `$VAULT?key=<имя>`   (не `$VAULT/secrets?key=` и не `$VAULT/api/secrets?key=`)
+#      grant'ы          → `$VAULT/grants`
+#      accept           → `$VAULT/grants/<id>/accept`
+#      корень комнаты   → `$VAULT`
+#      OpenAPI          → `${VAULT%/api/secrets}/openapi.json`
+#    Приписанный второй раз `/api/secrets` даёт `/api/secrets/api/secrets/…`
+#    и 404 — именно так выглядели наши прогоны 37953435657 и 38148243056.
 
 on:
   workflow_dispatch:
@@ -77,7 +88,7 @@ jobs:
             exit 0
           fi
           echo "::add-mask::$TOKEN"
-          trap 'curl -sf -X DELETE "$VAULT/session" -H "Authorization: Bearer $TOKEN" >/dev/null 2>&1 || true; rm -f /tmp/vault-pending.json /tmp/vault-accept.json /tmp/vault-secret.json /tmp/vault-secret-path.json /tmp/vault-room.json' EXIT
+          trap 'curl -sf -X DELETE "$VAULT/session" -H "Authorization: Bearer $TOKEN" >/dev/null 2>&1 || true; rm -f /tmp/vault-pending.json /tmp/vault-accept.json /tmp/vault-secret.json /tmp/vault-room.json' EXIT
           echo "сессия открыта: 201"
 
           # 3. Где лежит нужный pending: в .received (нам выданные). Печатаем
@@ -92,6 +103,9 @@ jobs:
 
           # 4. Accept. Тело НЕ отправляем (brain 09.10): успех — 200, повтор — 409.
           #    Повтор — не сбой: accept идемпотентен по построению пути.
+          #    404 — тоже не блокер (brain 13.10): grant id=16 уже `active`,
+          #    повторный accept на принятом grant'е не обязан отвечать как первый.
+          #    Идём дальше к чтению значения: ради него шаг и существует.
           ACODE="$(curl -s -o /tmp/vault-accept.json -w '%{http_code}' -X POST "$VAULT/grants/$GRANT_ID/accept" -H "Authorization: Bearer $TOKEN" || true)"
           echo "POST /grants/$GRANT_ID/accept: $ACODE"
           case "$ACODE" in
@@ -102,25 +116,28 @@ jobs:
             409)
               echo "accept: 409 — уже был принят ранее, это не сбой"
               ;;
+            404)
+              echo "accept: 404 — grant уже принят (brain 13.10), идём к чтению значения"
+              ;;
             *)
               echo "::error::accept вернул $ACODE — дальше не идём"
               exit 1
               ;;
           esac
 
-          # 5. Наличие секрета в комнате после accept. Значение НЕ читаем и НЕ
-          #    печатаем (ADR-0006): только имена ключей и коды ответов.
-          #    Форма чтения значения не установлена: письмо brain 09.10 даёт
-          #    GET /secrets?key=..., живой КАРМАН ответил на неё 404 (прогон
-          #    37953435657 — accept при этом прошёл 200). Пробуем обе известные
-          #    формы и печатаем коды; наличие доказываем по именам в корне
-          #    комнаты (та же форма, что в пробе).
-          QCODE="$(curl -s -o /tmp/vault-secret.json -w '%{http_code}' "$VAULT/secrets?key=$SECRET_KEY" -H "Authorization: Bearer $TOKEN" || true)"
-          echo "GET /secrets?key=$SECRET_KEY (форма письма brain 09.10): $QCODE"
-          FCODE="$(curl -s -o /tmp/vault-secret-path.json -w '%{http_code}' "$VAULT/secrets/$SECRET_KEY" -H "Authorization: Bearer $TOKEN" || true)"
-          echo "GET /secrets/$SECRET_KEY (форма с путём): $FCODE"
-          if [ "$FCODE" = "200" ]; then
-            jq --arg k "$SECRET_KEY" '{type: type, keys: (if type == "object" then keys else null end), key_present: ([.. | objects | has($k)] | any)}' /tmp/vault-secret-path.json
+          # 5. Чтение значения секрета. ФОРМА НАЙДЕНА — письма brain 12.10 и 13.10:
+          #    `GET <api-root>/api/secrets?key=<имя>` с Bearer-токеном, ответ
+          #    `{"secrets":{"<имя>":"<значение>"}}`.
+          #    ⚠️ `VAULT` (secrets.SECRETS_VAULT_URL) УЖЕ заканчивается на
+          #    `/api/secrets`. Наша прежняя форма `$VAULT/secrets?key=` давала
+          #    `/api/secrets/secrets?key=` → 404. Приписывать `/api/secrets`
+          #    второй раз нельзя нигде в этом файле.
+          #    Значение в лог НЕ печатаем (ADR-0006): только код ответа,
+          #    имена полей и наличие ключа.
+          QCODE="$(curl -s -o /tmp/vault-secret.json -w '%{http_code}' "$VAULT?key=$SECRET_KEY" -H "Authorization: Bearer $TOKEN" || true)"
+          echo "GET /api/secrets?key=$SECRET_KEY (форма brain 12.10/13.10): $QCODE"
+          if [ "$QCODE" = "200" ]; then
+            jq --arg k "$SECRET_KEY" '{type: type, keys: (if type == "object" then keys else null end), key_present: ([.. | objects | has($k)] | any)}' /tmp/vault-secret.json
           fi
 
           RCODE="$(curl -s -o /tmp/vault-room.json -w '%{http_code}' "$VAULT" -H "Authorization: Bearer $TOKEN" || true)"
@@ -170,7 +187,7 @@ jobs:
             exit 0
           fi
           echo "::add-mask::$TOKEN"
-          trap 'curl -sf -X DELETE "$VAULT/session" -H "Authorization: Bearer $TOKEN" >/dev/null 2>&1 || true; rm -f /tmp/vault-grants.json /tmp/vault-root.json /tmp/vault-openapi.json' EXIT
+          trap 'curl -sf -X DELETE "$VAULT/session" -H "Authorization: Bearer $TOKEN" >/dev/null 2>&1 || true; rm -f /tmp/vault-grants.json /tmp/vault-root.json /tmp/vault-openapi.json /tmp/vault-secret.json' EXIT
           echo "сессия открыта: 201"
 
           # 3. GET /grants: тело — в файл, в лог — ТОЛЬКО имена полей и типы.
@@ -208,20 +225,30 @@ jobs:
 
           # 5. Discovery контракта read-only: стандартный путь OpenAPI-схемы.
           #    Схема — не секреты: печатаем только пути и методы. Если схемы нет
-          #    (не 200) — это тоже ответ: точный вызов accept спросим у brain
-          #    письмом, а не угадаем в коде.
-          # 6. POST /grants/16/accept — точный вызов из письма brain 2026-10-09-grant16-exact-call.md
-          ACODE="$(curl -sf -o /dev/null -w '%{http_code}' -X POST "$VAULT/api/secrets/grants/16/accept" -H "Authorization: Bearer $TOKEN" || true)"
-          echo "POST /grants/16/accept: $ACODE"
-
-          # 7. GET значения секрета для шага деплоя (форма шага 5 комнаты)
-          #    Печатаем только код ответа; значение не выводим в лог (ADR-0006).
-          SCODE="$(curl -sf -o /tmp/vault-secret.json -w '%{http_code}' "$VAULT/api/secrets?key=ESA_CLIENT_SECRET_KAZANSKAYA" -H "Authorization: Bearer $TOKEN" || true)"
-          echo "GET /secrets?key=ESA_CLIENT_SECRET_KAZANSKAYA: $SCODE"
-
-          OCODE="$(curl -s -o /tmp/vault-openapi.json -w '%{http_code}' "$VAULT/openapi.json" -H "Authorization: Bearer $TOKEN" || true)"
+          #    (не 200) — это тоже ответ.
+          #    ⚠️ `VAULT` уже заканчивается на `/api/secrets`, а OpenAPI лежит
+          #    в корне API — отсекаем этот хвост, иначе получим 404.
+          OCODE="$(curl -s -o /tmp/vault-openapi.json -w '%{http_code}' "${VAULT%/api/secrets}/openapi.json" -H "Authorization: Bearer $TOKEN" || true)"
           echo "GET /openapi.json: $OCODE"
           if [ "$OCODE" = "200" ]; then
             echo "--- openapi: paths + methods only ---"
             jq '{paths: (.paths | keys), methods: (.paths | to_entries | map({path: .key, methods: (.value | keys)}))}' /tmp/vault-openapi.json
+          fi
+
+          # 6. POST /grants/16/accept — точный вызов из письма brain 2026-10-09-grant16-exact-call.md.
+          #    ⚠️ Прежде здесь было "$VAULT/api/secrets/grants/16/accept" — с
+          #    двойным префиксом (`/api/secrets/api/secrets/...`) → 404.
+          #    Правильный путь: `$VAULT/grants/16/accept`.
+          ACODE="$(curl -sf -o /dev/null -w '%{http_code}' -X POST "$VAULT/grants/16/accept" -H "Authorization: Bearer $TOKEN" || true)"
+          echo "POST /grants/16/accept: $ACODE"
+
+          # 7. GET значения секрета для шага деплоя (форма brain 12.10/13.10):
+          #    `GET <api-root>/api/secrets?key=<имя>`.
+          #    ⚠️ Прежде здесь было "$VAULT/api/secrets?key=..." — тот же двойной
+          #    префикс → 404. Теперь значение НЕ печатаем (ADR-0006): только код
+          #    ответа, имена полей и наличие ключа.
+          SCODE="$(curl -sf -o /tmp/vault-secret.json -w '%{http_code}' "$VAULT?key=ESA_CLIENT_SECRET_KAZANSKAYA" -H "Authorization: Bearer $TOKEN" || true)"
+          echo "GET /api/secrets?key=ESA_CLIENT_SECRET_KAZANSKAYA: $SCODE"
+          if [ "$SCODE" = "200" ]; then
+            jq --arg k 'ESA_CLIENT_SECRET_KAZANSKAYA' '{type: type, keys: (if type == "object" then keys else null end), key_present: ([.. | objects | has($k)] | any)}' /tmp/vault-secret.json
           fi
