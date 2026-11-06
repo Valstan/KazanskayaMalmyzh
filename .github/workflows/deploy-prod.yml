@@ -612,10 +612,17 @@ jobs:
           GCODE="$(curl -s -o /tmp/vault-grants.json -w '%{http_code}' "$VAULT/grants" -H "Authorization: Bearer $TOKEN" || true)"
           echo "GET /grants: $GCODE"
           GRANTS="$(cat /tmp/vault-grants.json 2>/dev/null || true)"
+          # ⚠️ ФОРМА ОТВЕТА (измерена пробой 37626890484): `GET /grants` отдаёт
+          #    ОБЪЕКТ {issued, received, slug}, а не массив. Массивы лежат в
+          #    .issued (нами выданные) и .received (нам выданные), а запись
+          #    называется sourceKey / targetSlug. Прежний фильтр искал массив
+          #    .grants/.items/.data и поля key/target_slug — поэтому не
+          #    срабатывал НИ РАЗУ, и всю работу держал 409 от КАРМАНА: наш
+          #    комментарий обещал идемпотентность, которой не было.
           HAVE="$(printf '%s' "$GRANTS" | jq -r '
-            (if type == "array" then . else (.grants // .items // .data // []) end)
-            | map(select(((.key // .secret_key // "") == "INGEST_GATEWAY_KEY")
-                     and ((.target_slug // .target // .to // "") == "setka")))
+            ((.issued // []) + (.received // []))
+            | map(select((.sourceKey // "") == "INGEST_GATEWAY_KEY"
+                         and (.targetSlug // "") == "setka"))
             | length' 2>/dev/null || echo 0)"
           if [ "${HAVE:-0}" != "0" ]; then
             echo "grant → setka уже выдан ранее — повторно не выдаём"
