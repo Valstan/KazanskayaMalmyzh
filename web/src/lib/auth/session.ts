@@ -39,8 +39,26 @@ export const SESSION_COOKIE_ATTRS = {
   path: '/',
 } as const
 
-export const readSessionCookie = (get: (name: string) => string | undefined): string | undefined =>
-  get(SESSION_COOKIE)
+/**
+ * Значение cookie — в Next 15+ это ОБЪЕКТ `{ name, value }`, а не строка.
+ *
+ * Раньше `cookies().get()` отдавал строку, и код (и его тесты) ждали именно
+ * строку. На проде это стоило 500 при сохранении факта: `TypeError: e.lastIndexOf
+ * is not a function` (замерено 06.11) — значение уходило в `open()` объектом.
+ * Тесты проходили, потому что заглушка `jar.get()` возвращала строку, то есть
+ * проверяли не то, что отдаёт настоящий Next.
+ */
+const cookieValue = (raw: unknown): string | undefined => {
+  if (typeof raw === 'string') return raw
+  if (raw && typeof raw === 'object') {
+    const value = (raw as { value?: unknown }).value
+    if (typeof value === 'string') return value
+  }
+  return undefined
+}
+
+export const readSessionCookie = (get: (name: string) => unknown): string | undefined =>
+  cookieValue(get(SESSION_COOKIE))
 
 /**
  * Сессия из запроса. Формы cookie-объекта разные: Next отдаёт `cookies.get`,
@@ -57,12 +75,12 @@ export const readSessionFromRequest = (req: {
   if (!secret) return null
 
   const jar = req.cookies as
-    | { get?: (name: string) => string | undefined; [key: string]: unknown }
+    | { get?: (name: string) => unknown; [key: string]: unknown }
     | undefined
   let raw: string | undefined
   if (jar) {
-    if (typeof jar.get === 'function') raw = jar.get(SESSION_COOKIE)
-    else if (typeof jar[SESSION_COOKIE] === 'string') raw = jar[SESSION_COOKIE] as string
+    if (typeof jar.get === 'function') raw = cookieValue(jar.get(SESSION_COOKIE))
+    else raw = cookieValue(jar[SESSION_COOKIE])
   }
   if (!raw) {
     const header = req.headers.get?.('cookie') ?? ''
@@ -97,11 +115,11 @@ export const sealSession = (session: ResidentSession, secret: string): string =>
   seal(session, secret)
 
 export const openSession = (
-  sealed: string | undefined,
+  sealed: string | undefined | null,
   secret: string,
   nowS: number,
 ): ResidentSession | null => {
-  if (!sealed) return null
+  if (!sealed || typeof sealed !== 'string') return null
   const p = open(sealed, secret) as Partial<ResidentSession> | null
   if (!p || typeof p.sub !== 'string' || !p.sub || typeof p.exp !== 'number') return null
   if (p.exp <= nowS) return null
