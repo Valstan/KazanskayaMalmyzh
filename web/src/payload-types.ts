@@ -74,6 +74,7 @@ export interface Config {
     media: Media;
     users: User;
     visitors: Visitor;
+    'visitor-facts': VisitorFact;
     subscribers: Subscriber;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -89,6 +90,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     visitors: VisitorsSelect<false> | VisitorsSelect<true>;
+    'visitor-facts': VisitorFactsSelect<false> | VisitorFactsSelect<true>;
     subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -405,6 +407,37 @@ export interface Visitor {
   createdAt: string;
 }
 /**
+ * Что житель назвал о себе. Источник — `self` (сам), `doc:<ref>` или `import:<ref>`. Не правьте source и verifiedAt вручную: подтвердить факт может только источник.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "visitor-facts".
+ */
+export interface VisitorFact {
+  id: number;
+  /**
+   * Непрозрачный идентификатор от ЕСА. Приходит только вместе с токеном.
+   */
+  esaSub: string;
+  /**
+   * Ключ из закрытого набора вопросов (см. `lib/facts.ts`). Новый вопрос — это новая строка в реестре, а не произвольный текст.
+   */
+  factKey: string;
+  /**
+   * Значение в том виде, в каком его дал житель; смысл разбирает `lib/facts.ts`.
+   */
+  value: string;
+  /**
+   * `self` — житель назвал сам; `doc:<ref>` — документ; `import:<ref>` — ведомство.
+   */
+  source: string;
+  /**
+   * Проставляется источником. Пусто ⇒ факт «по вашим данным»: он меняет формулировку ответа, но не даёт обещаний.
+   */
+  verifiedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Почты для одного письма о дате Ярмарки 2027 года. Рассылка — вручную; после неё список удаляется.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -479,6 +512,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'visitors';
         value: number | Visitor;
+      } | null)
+    | ({
+        relationTo: 'visitor-facts';
+        value: number | VisitorFact;
       } | null)
     | ({
         relationTo: 'subscribers';
@@ -708,6 +745,19 @@ export interface VisitorsSelect<T extends boolean = true> {
   subscribed?: T;
   unsubscribedAt?: T;
   lastSeenAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "visitor-facts_select".
+ */
+export interface VisitorFactsSelect<T extends boolean = true> {
+  esaSub?: T;
+  factKey?: T;
+  value?: T;
+  source?: T;
+  verifiedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
