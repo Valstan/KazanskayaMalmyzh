@@ -9,6 +9,7 @@ import {
   seal,
 } from '../../../../../lib/auth/oidc'
 import { SESSION_COOKIE_ATTRS, TX_COOKIE, TX_MAX_AGE_S } from '../../../../../lib/auth/session'
+import { SITE_URL } from '../../../../../lib/site'
 
 // GET /api/auth/esa/login — начало входа через ЕСА.
 //
@@ -22,10 +23,11 @@ export const GET = async (req: NextRequest): Promise<Response> => {
   const secret = process.env.PAYLOAD_SECRET
   if (!cfg || !secret) {
     // Входа нет (нет client_secret) — это не «ошибка входа», это отсутствие
-    // входа. Отвечаем 404, а не редиректом на ЕСА: человек не должен уйти
-    // на страницу входа, где его ждёт ошибка.
+    // входа. Человека отправляем на страницу профиля с честным объяснением,
+    // а не в 404: ссылка «Войти» на живой странице должна вести куда-то
+    // осмысленное.
     console.error('[auth/login] ЕСА не настроен: нет client_secret или PAYLOAD_SECRET')
-    return new Response('Not Found', { status: 404 })
+    return NextResponse.redirect(new URL('/profile?auth=unavailable', SITE_URL), 302)
   }
 
   const next = sanitizeNextPath(req.nextUrl.searchParams.get('next'))

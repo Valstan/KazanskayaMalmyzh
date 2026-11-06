@@ -40,6 +40,7 @@ export default async function ProfilePage({
   const session = readSessionFromRequest({ headers: h })
   const params = await searchParams
   const failed = params?.auth === 'failed'
+  const unavailable = params?.auth === 'unavailable'
 
   if (!session) {
     return (
@@ -52,6 +53,12 @@ export default async function ProfilePage({
               <div className="notice" role="alert">
                 Вход не получился. Попробуйте ещё раз — если не выйдет, напишите оргкомитету в
                 подвале сайта.
+              </div>
+            )}
+            {unavailable && (
+              <div className="notice" role="alert">
+                Вход сейчас недоступен: на сервере не настроен ключ доступа к «Сервисам Малмыжа».
+                Оргкомитет уже знает об этом — напишите нам, если нужно войти именно сейчас.
               </div>
             )}
             <p className="lead">
