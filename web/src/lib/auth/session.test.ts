@@ -48,6 +48,12 @@ describe('подпись и срок', () => {
     expect(openSession(undefined, SECRET, nowS)).toBeNull()
     expect(openSession('', SECRET, nowS)).toBeNull()
   })
+
+  it('не-строка вместо cookie — тоже «не вошёл», а не падение', () => {
+    // Форма Next 15+ — объект {name, value}. Если он дойдёт до open() как есть,
+    // будет TypeError (замерено 06.11 на проде).
+    expect(openSession({ name: SESSION_COOKIE, value: 'x' } as never, SECRET, nowS)).toBeNull()
+  })
 })
 
 describe('чтение сессии из запроса', () => {
@@ -64,6 +70,29 @@ describe('чтение сессии из запроса', () => {
   it('находит cookie, когда её уже разобрал Next', () => {
     process.env.PAYLOAD_SECRET = SECRET
     const jar = { get: (name: string) => (name === SESSION_COOKIE ? sealed : undefined) }
+    expect(readSessionFromRequest({ headers: {}, cookies: jar })?.sub).toBe('esa-user-123')
+  })
+
+  // ⚠️ ФОРМА NEXT 15+ (проверено на установленном next 16.4.5: `req.cookies.get()`
+  // возвращает ОБЪЕКТ `{ name, value }`, а не строку). Пока здесь ждали строку,
+  // сохранение факта на проде падало 500-кой: `TypeError: e.lastIndexOf is not
+  // a function` (замерено 06.11), а тесты были зелёными — заглушка отдавала
+  // строку и проверяла не то, что отдаёт настоящий Next.
+  it('находит cookie в форме Next 15+ — объект {name, value}', () => {
+    process.env.PAYLOAD_SECRET = SECRET
+    const jar = { get: (name: string) => (name === SESSION_COOKIE ? { name, value: sealed } : undefined) }
+    expect(readSessionFromRequest({ headers: {}, cookies: jar })?.sub).toBe('esa-user-123')
+  })
+
+  it('форма Next 15+ без cookie — это «не вошёл», а не ошибка', () => {
+    process.env.PAYLOAD_SECRET = SECRET
+    const jar = { get: () => undefined }
+    expect(readSessionFromRequest({ headers: {}, cookies: jar })).toBeNull()
+  })
+
+  it('plain-объект с полем value тоже читается', () => {
+    process.env.PAYLOAD_SECRET = SECRET
+    const jar = { [SESSION_COOKIE]: { name: SESSION_COOKIE, value: sealed } }
     expect(readSessionFromRequest({ headers: {}, cookies: jar })?.sub).toBe('esa-user-123')
   })
 

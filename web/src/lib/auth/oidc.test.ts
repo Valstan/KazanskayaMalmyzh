@@ -173,8 +173,16 @@ describe('PKCE и транзакция', () => {
     expect(openTransaction('мусор', SECRET)).toBeNull()
   })
 
-  it('транзакция без обязательных полей не открывается', () => {
-    expect(openTransaction(seal({ state: 'st' }, SECRET), SECRET)).toBeNull()
+  // Форма Next 15+ — cookie приходит объектом {name, value}. Раньше такое
+  // значение доходило до open() как объект и роняло страницу TypeError'ом
+  // «e.lastIndexOf is not a function» (замерено 06.11 на проде).
+  it('не-строка вместо подписи — это «нет», а не падение', () => {
+    expect(open({ name: 'x', value: 'y' } as never, SECRET)).toBeNull()
+    expect(openTransaction({ name: 'x', value: 'y' } as never, SECRET)).toBeNull()
+    expect(openTransaction(undefined as never, SECRET)).toBeNull()
+  })
+
+  it('транзакция без обязательных полей не открывается', () => {    expect(openTransaction(seal({ state: 'st' }, SECRET), SECRET)).toBeNull()
     expect(openTransaction(seal({ state: '', nonce: 'no', verifier: 've' }, SECRET), SECRET)).toBeNull()
   })
 

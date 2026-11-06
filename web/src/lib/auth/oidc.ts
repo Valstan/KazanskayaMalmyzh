@@ -167,6 +167,10 @@ export const seal = (value: unknown, secret: string): string => {
 }
 
 export const open = (sealed: string, secret: string): unknown | null => {
+  // Значение может прийти не строкой: в Next 15+ cookie — объект `{name,value}`,
+  // и такой мусор раньше ронял страницу TypeError'ом вместо «сессии нет»
+  // (замерено 06.11 на сохранении факта).
+  if (typeof sealed !== 'string' || !sealed) return null
   const dot = sealed.lastIndexOf('.')
   if (dot <= 0) return null
   const data = sealed.slice(0, dot)
