@@ -602,6 +602,57 @@
   color: #fff;
 }
 
+/* ---------- Профиль жителя: «что ещё не сказано» ----------
+   Форма подписки живёт на тёмной фотополосе, и её подписи — белые. Профиль
+   лежит на светлом пергаменте, и те же классы давали белый текст на белом:
+   вопросы и подсказки были нечитаемы (замечено владельцем 06.11). Поэтому у
+   блока вопросов свои классы — с токенами светлой темы. */
+.profile-facts__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.profile-facts__hint {
+  margin-top: 0;
+  margin-bottom: 0.6rem;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--c-text-muted);
+}
+
+.profile-facts__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.profile-facts__row input,
+.profile-facts__row select {
+  flex: 0 1 auto;
+  min-width: 12rem;
+  padding: 0.6rem 0.8rem;
+  border: 2px solid var(--c-border);
+  border-radius: var(--r-md);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-size: 1rem;
+}
+
+.profile-facts__row input:focus-visible,
+.profile-facts__row select:focus-visible {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 1px;
+}
+
+.profile-facts__status--error {
+  margin-top: 0.7rem;
+  font-weight: 700;
+  color: var(--c-primary-dark);
+}
+
 .btn--outline-light {
   border-color: rgba(255, 255, 255, 0.72);
   background: rgba(255, 255, 255, 0.08);

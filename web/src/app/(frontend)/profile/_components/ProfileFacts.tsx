@@ -113,9 +113,9 @@ export function ProfileFacts({
           </p>
           {missing.map((question) => (
             <div key={question.key}>
-              <p className="notify-form__label">{question.label}</p>
-              <p className="notify-form__note">{question.hint}</p>
-              <div className="notify-form__row">
+              <p className="profile-facts__label">{question.label}</p>
+              <p className="profile-facts__hint">{question.hint}</p>
+              <div className="profile-facts__row">
                 {field(question, answers[question.key] ?? '', (v) =>
                   setAnswers((prev) => ({ ...prev, [question.key]: v })),
                 )}
@@ -162,7 +162,7 @@ export function ProfileFacts({
       )}
 
       {typeof state === 'object' && (
-        <p className="notify-form__status notify-form__status--error" role="alert">
+        <p className="profile-facts__status--error" role="alert">
           {state.error}
         </p>
       )}
@@ -192,7 +192,7 @@ function EditFact({
 }) {
   const [value, setValue] = useState('')
   return (
-    <div className="notify-form__row">
+    <div className="profile-facts__row">
       {question.type === 'choice' ? (
         <select
           aria-label={question.label}
