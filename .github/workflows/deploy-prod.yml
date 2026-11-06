@@ -226,8 +226,15 @@ jobs:
           set -eo pipefail
           [ -n "${VAULT:-}" ] || { echo "::warning::нет secrets.SECRETS_VAULT_URL — секрет ЕСА не положен"; exit 0; }
           # 1. Паспорт → сессия комнаты (ADR-0012, D-061).
+          #    ⚠️ audience — РОВНО `karman-vault`: без него КАРМАН отвечает 401
+          #    без пояснений, и шаг тихо уходит с «сессия комнаты не открыта»
+          #    (замерено 06.11 на выкате e3dfae3 — секрет в env-файл не попал,
+          #    вход остался «недоступен»). Требование то же, что в шаге зеркала.
+          #    И `.value // empty`: без `// empty` неудачный ответ даёт строку
+          #    "null" — она непустая, и проверка «выдано ли удостоверение»
+          #    её бы пропустила.
           ASSERTION="$(curl -sf -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' || true)"
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=karman-vault" | jq -r '.value // empty' || true)"
           [ -n "$ASSERTION" ] || { echo "::warning::удостоверение прогона не выдано — секрет ЕСА не положен"; exit 0; }
           echo "::add-mask::$ASSERTION"
           SESSION="$(curl -sf -X POST "$VAULT/session" -H "Authorization: Bearer $ASSERTION" || true)"
