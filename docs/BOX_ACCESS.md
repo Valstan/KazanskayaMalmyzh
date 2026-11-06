@@ -31,6 +31,8 @@ curl -s -H "Host: xn--80aaa0andu6a3j.xn--80adkdyec4j.xn--p1ai" http://127.0.0.1/
 
 Применяются вручную **до** деплоя: SSH-туннель к PostgreSQL бокса через тот же jump-host, затем `payload migrate` с dev-машины; после — `gh workflow run deploy-prod.yml` (migration-guard пропускает dispatch). Приёмка ручной миграции обязана включать **обновление** уже существующего документа, не только создание (G231).
 
+**Второй путь (тот же туннель, но туннель поднимает раннер CI):** `gh workflow run deploy-prod.yml -f apply_migrations=true` — воркфлоу применит неприменённые миграции через туннель к боксу и только потом выкатит. Нужен там, где доступа к боксу с dev-машины нет (у Мозга его нет — он не ходит на бокс вообще). Флаг — явное согласие на изменение схемы: обычный выкат миграции не трогает.
+
 ## Скриншоты прода с dev-машины
 
 Browser-pane к localhost не подключается, headless-Chrome не пишет в `d:\`. Рабочая связка — SSH-туннель к порту приложения + `puppeteer-core` из scratchpad с системным Chrome, `setViewport` 1280/390 и request-interception на `mc.yandex.ru` — без него `networkidle2` висит на DPI.
