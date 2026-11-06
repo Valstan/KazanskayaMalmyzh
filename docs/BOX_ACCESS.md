@@ -27,6 +27,50 @@ curl -s -H "Host: xn--80aaa0andu6a3j.xn--80adkdyec4j.xn--p1ai" http://127.0.0.1/
 - Внешняя https-проверка (сертификат, редирект http→https) — с jump-host'а.
 - Длительность рестарта юнита: `sudo journalctl -u kazanskaya -o short-iso | grep -E 'Stopping|Stopped'` — разница отметок и есть простой.
 
+## Комната КАРМАНа в юните (вход через ЕСА, пилот #386)
+
+`/api/auth/esa/login` на проде отвечает `auth=unavailable`, когда юнит не может достать
+`ESA_CLIENT_SECRET_KAZANSKAYA` из комнаты `kazanskayamalmyzh`. Сайт при этом цел (деградация
+намеренная): страница `/profile` показывает кнопку «Войти» с объяснением.
+
+**Диагностика за минуту** (на боксе, от пользователя деплоя):
+
+```
+sudo journalctl -u kazanskaya -o cat --since '-30 min' | grep '\[secrets\]'
+```
+
+Строки приложения называют причину прямо: `SECRETS_TOKEN не задан` / `SECRETS_VAULT_URL не
+задан` / `комната ответила 404 — grant не виден` / `до-тяг не удался после 3 попыток`.
+
+**Что должно быть в env-файле юнита** (`/etc/kazanskaya/kazanskaya.env`, права 600):
+
+- `SECRETS_TOKEN` — токен нашей комнаты `kazanskayamalmyzh` (постоянный секрет комнаты, **не**
+  сессионный токен прогона: тот протухает за час и остаётся на вид рабочим);
+- `SECRETS_VAULT_URL` — адрес КАРМАНа, **уже с `/api/secrets`** на конце: приписанный второй раз
+  префикс даёт `/api/secrets/api/secrets/…` и 404 (письмо brain 12.10/13.10).
+
+## Комната КАРМАНа в юните (вход через ЕСА, пилот #386)
+
+`/api/auth/esa/login` на проде отвечает `auth=unavailable`, когда юнит не может достать
+`ESA_CLIENT_SECRET_KAZANSKAYA` из комнаты `kazanskayamalmyzh`. Сайт при этом цел (деградация
+намеренная): страница `/profile` показывает кнопку «Войти» с объяснением.
+
+**Диагностика за минуту** (на боксе, от пользователя деплоя):
+
+```
+sudo journalctl -u kazanskaya -o cat --since '-30 min' | grep '\[secrets\]'
+```
+
+Строки приложения называют причину прямо: `SECRETS_TOKEN не задан` / `SECRETS_VAULT_URL не
+задан` / `комната ответила 404 — grant не виден` / `до-тяг не удался после 3 попыток`.
+
+**Что должно быть в env-файле юнита** (`/etc/kazanskaya/kazanskaya.env`, права 600):
+
+- `SECRETS_TOKEN` — токен нашей комнаты `kazanskayamalmyzh` (постоянный секрет комнаты, **не**
+  сессионный токен прогона: тот протухает за час и остаётся на вид рабочим);
+- `SECRETS_VAULT_URL` — адрес КАРМАНа, **уже с `/api/secrets`** на конце: приписанный второй раз
+  префикс даёт `/api/secrets/api/secrets/…` и 404 (письмо brain 12.10/13.10).
+
 ## Payload-миграции (#017)
 
 Применяются вручную **до** деплоя: SSH-туннель к PostgreSQL бокса через тот же jump-host, затем `payload migrate` с dev-машины; после — `gh workflow run deploy-prod.yml` (migration-guard пропускает dispatch). Приёмка ручной миграции обязана включать **обновление** уже существующего документа, не только создание (G231).
