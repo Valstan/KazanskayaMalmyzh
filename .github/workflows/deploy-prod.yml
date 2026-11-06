@@ -201,6 +201,73 @@ jobs:
       # NODE_ENV=production и PAYLOAD_MIGRATING=true обязательны: при них
       # адаптер НЕ пушит схему (в конфиге push:true), иначе миграция
       # столкнулась бы с уже созданной таблицей.
+      # Клиентский секрет ЕСА — в env-файл юнита.
+      #
+      # Откуда: комната КАРМАНА `kazanskayamalmyzh` (секрет выпустил Сарафан,
+      # grant id=16). Комната — источник, env-файл юнита — кэш (D-061).
+      #
+      # Почему через CI, а не руками: у Мозга нет SSH к боксу, а боксу нечем
+      # достучаться до комнаты (юниту нужен токен комнаты, а он лежит в том же
+      # env-файле — круг замыкается). У раннера есть и ключ, и паспортный путь
+      # к КАРМАНу (ADR-0012).
+      #
+      # ⚠️ Значение не должно попасть ни в лог, ни в argv: поэтому оно едет на
+      # бокс ФАЙЛОМ (scp), а не аргументом (G321) и не подстановкой в команду.
+      # На боксе строку пишет awk, который берёт значение ИЗ ФАЙЛА, — в
+      # аргументах процесса его тоже нет.
+      - name: Клиентский секрет ЕСА — в env-файл юнита
+        # На PR-прогоне паспорт не выдаётся (401 по построению) — там шаг не
+        # нужен. На выкате (push/dispatch) — нужен: без него юнит не видит
+        # комнату и `/api/auth/esa/login` отвечает «вход недоступен».
+        if: github.event_name != 'pull_request'
+        env:
+          VAULT: ${{ secrets.SECRETS_VAULT_URL }}
+        run: |
+          set -eo pipefail
+          [ -n "${VAULT:-}" ] || { echo "::warning::нет secrets.SECRETS_VAULT_URL — секрет ЕСА не положен"; exit 0; }
+          # 1. Паспорт → сессия комнаты (ADR-0012, D-061).
+          ASSERTION="$(curl -sf -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' || true)"
+          [ -n "$ASSERTION" ] || { echo "::warning::удостоверение прогона не выдано — секрет ЕСА не положен"; exit 0; }
+          echo "::add-mask::$ASSERTION"
+          SESSION="$(curl -sf -X POST "$VAULT/session" -H "Authorization: Bearer $ASSERTION" || true)"
+          TOKEN="$(printf '%s' "$SESSION" | jq -r '.token // empty' 2>/dev/null || true)"
+          [ -n "$TOKEN" ] || { echo "::warning::сессия комнаты не открыта — секрет ЕСА не положен"; exit 0; }
+          echo "::add-mask::$TOKEN"
+          trap 'curl -sf -X DELETE "$VAULT/session" -H "Authorization: Bearer $TOKEN" >/dev/null 2>&1 || true; rm -f /tmp/esa_secret.json /tmp/esa_secret.txt' EXIT
+          # 2. Значение из комнаты. Форма — как в karman-grant.yml: $VAULT?key=<имя>
+          #    (VAULT уже заканчивается на /api/secrets; второй раз не приписываем).
+          code="$(curl -s -o /tmp/esa_secret.json -w '%{http_code}' "$VAULT?key=ESA_CLIENT_SECRET_KAZANSKAYA" -H "Authorization: Bearer $TOKEN" || true)"
+          [ "$code" = "200" ] || { echo "::warning::комната ответила $code на чтение ESA_CLIENT_SECRET_KAZANSKAYA — секрет не положен"; exit 0; }
+          VALUE="$(jq -r '.secrets.ESA_CLIENT_SECRET_KAZANSKAYA // .ESA_CLIENT_SECRET_KAZANSKAYA // empty' /tmp/esa_secret.json 2>/dev/null || true)"
+          [ -n "$VALUE" ] || { echo "::warning::в ответе комнаты нет значения — секрет не положен"; exit 0; }
+          echo "::add-mask::$VALUE"
+          rm -f /tmp/esa_secret.json
+          # 3. Значение — на бокс файлом: ни в argv, ни в лог.
+          printf '%s' "$VALUE" > /tmp/esa_secret.txt
+          scp -q /tmp/esa_secret.txt kazanskaya:/tmp/esa_secret.txt 2>/dev/null || { echo "::error::scp не доставил секрет на бокс"; exit 1; }
+          rm -f /tmp/esa_secret.txt
+          # 4. На боксе: заменить строку или дописать её; права 600; временный файл — долой.
+          ssh kazanskaya 'bash -s' 2>/dev/null <<'REMOTE'
+          exec 2>&1
+          set -eo pipefail
+          F=/etc/kazanskaya/kazanskaya.env
+          [ -s /tmp/esa_secret.txt ] || { echo "::error::секрет не приехал на бокс"; exit 1; }
+          TMPF=$(mktemp)
+          # awk читает значение ИЗ ФАЙЛА (в argv его нет). Логика идемпотентна:
+          # строка есть → заменяем; строки нет → дописываем. Прежняя версия
+          # (только «заменить») молча НЕ дописывала, если строки ещё не было —
+          # проверено пробой на копии env-файла 06.11.
+          sudo -n awk 'BEGIN{while((getline l < "/tmp/esa_secret.txt")>0) v=l; done=0}
+            /^ESA_CLIENT_SECRET=/{print "ESA_CLIENT_SECRET=" v; done=1; next}
+            {print}
+            END{if(!done) print "ESA_CLIENT_SECRET=" v}' "$F" > "$TMPF"
+          sudo -n cp "$TMPF" "$F"
+          sudo -n chmod 600 "$F"
+          rm -f "$TMPF" /tmp/esa_secret.txt
+          echo "✅ ESA_CLIENT_SECRET в env-файле юнита"
+          REMOTE
+
       - name: Применить Payload-миграции (dispatch + apply_migrations)
         # Для `type: boolean` контекст `inputs` отдаёт БУЛЕВО, а не строку —
         # сравнение с 'true' всегда ложно, и шаг молча пропускался (проверено
