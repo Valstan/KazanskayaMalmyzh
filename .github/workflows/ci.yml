@@ -108,8 +108,15 @@ jobs:
       # Тесты на чистую логику: JSON-LD праздника и летопись годов. Оба набора
       # написаны вокруг уже случавшихся багов — расхождение статуса праздника и
       # его subEvent и сбитый порядок годов.
+      #
+      # Плюс интеграционный набор профиля жителя (пилот #386): он ходит в БД, и
+      # без неё не проверяется. Набор сам пропускается, если DATABASE_URL не
+      # задан, поэтому обычный `pnpm test` на машине без базы остаётся зелёным.
       - name: Test
         working-directory: web
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/kazanskaya_build
+          PAYLOAD_SECRET: ci-build-only-secret-not-used-at-runtime
         run: pnpm test
 
       - name: Build

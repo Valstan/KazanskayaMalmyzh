@@ -35,6 +35,15 @@ on:
       - '.github/**'
       - '.claude/**'
   workflow_dispatch:
+    inputs:
+      # Применить НЕПРИМЕНЁННЫЕ Payload-миграции на проде перед выкатом.
+      # Схему меняет человек, который знает, что меняет (G231, #017): обычный
+      # выкат миграции не трогает, а migration-guard останавливает авто-выкат
+      # коммита с миграцией. Флаг — явное согласие на изменение схемы.
+      apply_migrations:
+        description: 'Применить неприменённые Payload-миграции на проде ПЕРЕД выкатом'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -174,6 +183,56 @@ jobs:
             echo "  ServerAliveInterval 30"
           } > ~/.ssh/config
           chmod 600 ~/.ssh/config
+
+      # Применение неприменённых Payload-миграций на проде — ТОЛЬКО по явному
+      # запросу (dispatch + флаг apply_migrations). Обычный выкат миграции не
+      # трогает: схему меняет человек, который знает, что меняет (G231, #017).
+      #
+      # Путь тот же, что в docs/BOX_ACCESS.md §миграции, только туннель
+      # поднимает раннер, а не dev-машина: раннер уже умеет ходить на бокс (тот
+      # же ключ и тот же alias `kazanskaya`), а у Мозга доступа к боксу нет.
+      #
+      # NODE_ENV=production и PAYLOAD_MIGRATING=true обязательны: при них
+      # адаптер НЕ пушит схему (в конфиге push:true), иначе миграция
+      # столкнулась бы с уже созданной таблицей.
+      - name: Применить Payload-миграции (dispatch + apply_migrations)
+        if: github.event_name == 'workflow_dispatch' && inputs.apply_migrations == 'true'
+        working-directory: web
+        env:
+          NODE_ENV: production
+          PAYLOAD_MIGRATING: 'true'
+          PAYLOAD_SECRET: ci-only-secret-not-used-at-runtime
+        run: |
+          set -eo pipefail
+          # Строку подключения берём из окружения ЖИВОГО юнита на боксе — не из
+          # файла: путей сервера в публичном воркфлоу быть не должно (D-038).
+          DB=$(ssh kazanskaya 'bash -s' <<'REMOTE' 2>/dev/null
+          exec 2>&1
+          set -eo pipefail
+          MAINPID=$(systemctl show -p MainPID --value kazanskaya)
+          [ "$MAINPID" != "0" ] && [ -n "$MAINPID" ] || { echo "::error::юнит kazanskaya не запущен"; exit 1; }
+          sudo -n tr '\0' '\n' < /proc/$MAINPID/environ | grep '^DATABASE_URL=' | sed 's/^DATABASE_URL=//'
+          REMOTE
+          )
+          [ -n "$DB" ] || { echo "::error::DATABASE_URL не найден в окружении процесса"; exit 1; }
+          # Туннель к PostgreSQL бокса: из раннера база на localhost бокса не видна.
+          ssh -f -N -L 15432:127.0.0.1:5432 kazanskaya
+          sleep 2
+          export DATABASE_URL="$(printf '%s' "$DB" | sed -E 's#@(localhost|127\.0\.0\.1):[0-9]+#@127.0.0.1:15432#')"
+          echo "применяем неприменённые миграции (хост в строке подключения заменён на туннель)"
+          pnpm payload migrate
+          # Приёмка — НА БОКСЕ: пароль в раннер не уходит и в лог не попадает.
+          ssh kazanskaya 'bash -s' <<'REMOTE'
+          exec 2>&1
+          set -eo pipefail
+          MAINPID=$(systemctl show -p MainPID --value kazanskaya)
+          DB=$(sudo -n tr '\0' '\n' < /proc/$MAINPID/environ | grep '^DATABASE_URL=' | sed 's/^DATABASE_URL=//')
+          psql "$DB" -tAc "SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='payload_locked_documents_rels' AND column_name='visitor_facts_id'" | grep -q visitor_facts_id \
+            || { echo "::error::миграция не дала колонку visitor_facts_id"; exit 1; }
+          psql "$DB" -tAc "SELECT to_regclass('public.visitor_facts')" | grep -q visitor_facts \
+            || { echo "::error::миграция не дала таблицу visitor_facts"; exit 1; }
+          echo "✅ миграции применены: visitor_facts и visitor_facts_id на месте"
+          REMOTE
 
       - name: Ship artifact + restart
         run: |
