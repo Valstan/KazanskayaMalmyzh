@@ -40,10 +40,23 @@ export type EsaConfig = {
  * Конфиг клиента. `client_secret` — единственный секрет в контуре входа; он
  * приезжает либо из окружения, либо до-тягом из комнаты КАРМАНа (см.
  * `lib/auth/vault.ts`). Если его нет — входа нет, и это честно: fail-closed.
+ *
+ * ⚠️ ИМЯ ПЕРЕМЕННОЙ — РОВНО ТО, ПОД КОТОРЫМ КОМНАТА ОТДАЁТ ЗНАЧЕНИЕ:
+ * `ensureSecret('ESA_CLIENT_SECRET_KAZANSKAYA')` кладёт значение в
+ * `process.env.ESA_CLIENT_SECRET_KAZANSKAYA` — под тем же именем, под которым
+ * ключ лежит в комнате (свойство 6 спеки: имя ключа переносится как есть).
+ * Прежнее чтение `process.env.ESA_CLIENT_SECRET` — это переменная, которую
+ * никто никогда не заполняет: до-тяг наполняет `..._KAZANSKAYA`, и значение
+ * терялось по дороге, а вход отвечал «auth=unavailable» (замерено 06.11).
+ * Старое имя оставлено как запасной путь для оператора, который задал секрет
+ * руками. ⚠️ И это НЕ меняет проверку подписи: `client_secret` — аутентификация
+ * клиента на token_endpoint, а id_token проверяется только по JWKS/RS256
+ * (`verifyIdToken` ниже). Наличие секрета в окружении подпись не трогает.
  */
 export const esaConfig = (): EsaConfig | null => {
   const clientId = process.env.ESA_CLIENT_ID || ESA_CLIENT_ID
-  const clientSecret = process.env.ESA_CLIENT_SECRET
+  const clientSecret =
+    process.env.ESA_CLIENT_SECRET_KAZANSKAYA || process.env.ESA_CLIENT_SECRET
   if (!clientSecret) return null
   return {
     // Без явного issuer ЕСА не выдаёт: адрес берём из окружения, а не угадываем.
