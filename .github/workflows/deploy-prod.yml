@@ -311,10 +311,21 @@ jobs:
           set -eo pipefail
           MAINPID=$(systemctl show -p MainPID --value kazanskaya)
           DB=$(sudo -n tr '\0' '\n' < /proc/$MAINPID/environ | grep '^DATABASE_URL=' | sed 's/^DATABASE_URL=//')
-          psql "$DB" -tAc "SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='payload_locked_documents_rels' AND column_name='visitor_facts_id'" | grep -q visitor_facts_id \
-            || { echo "::error::миграция не дала колонку visitor_facts_id"; exit 1; }
-          psql "$DB" -tAc "SELECT to_regclass('public.visitor_facts')" | grep -q visitor_facts \
-            || { echo "::error::миграция не дала таблицу visitor_facts"; exit 1; }
+          # НЕ `psql | grep -q`: под `pipefail` такой конвейер врёт — `grep -q`
+          # выходит на первом совпадении, `psql` ловит EPIPE, весь конвейер
+          # отдаёт 141 и приёмка объявляет «миграция не дала колонку» при
+          # колонке, которая есть (измеряли 49 ложных срабатываний из 1800).
+          # Результат забираем в переменную и сравниваем через `case`.
+          COL=$(psql "$DB" -tAc "SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='payload_locked_documents_rels' AND column_name='visitor_facts_id'" | tr -d '[:space:]')
+          case "$COL" in
+            *visitor_facts_id) ;;
+            *) echo "::error::миграция не дала колонку visitor_facts_id"; exit 1 ;;
+          esac
+          TBL=$(psql "$DB" -tAc "SELECT to_regclass('public.visitor_facts')" | tr -d '[:space:]')
+          case "$TBL" in
+            *visitor_facts) ;;
+            *) echo "::error::миграция не дала таблицу visitor_facts"; exit 1 ;;
+          esac
           echo "✅ миграции применены: visitor_facts и visitor_facts_id на месте"
           REMOTE
 
